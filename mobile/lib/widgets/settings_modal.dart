@@ -56,6 +56,9 @@ class _SettingsModalState extends State<SettingsModal> {
   String _wakeWordModel = 'models/hey_cal.onnx';
   double _wakeWordThreshold = 0.5;
   double _wakeWordTimeout = 3.0;
+  // Turn detection (advanced)
+  bool _allowInterruptions = true;
+  double _minEndpointingDelay = 0.5;
 
   // Available options
   List<String> _voices = [];
@@ -119,6 +122,8 @@ class _SettingsModalState extends State<SettingsModal> {
           _wakeWordModel = settings['wake_word_model'] ?? _wakeWordModel;
           _wakeWordThreshold = (settings['wake_word_threshold'] ?? _wakeWordThreshold).toDouble();
           _wakeWordTimeout = (settings['wake_word_timeout'] ?? _wakeWordTimeout).toDouble();
+          _allowInterruptions = settings['allow_interruptions'] ?? _allowInterruptions;
+          _minEndpointingDelay = (settings['min_endpointing_delay'] ?? _minEndpointingDelay).toDouble();
           _wakeGreetingsController.text = _wakeGreetings.join('\n');
         });
       }
@@ -178,6 +183,8 @@ class _SettingsModalState extends State<SettingsModal> {
         'wake_word_model': _wakeWordModel,
         'wake_word_threshold': _wakeWordThreshold,
         'wake_word_timeout': _wakeWordTimeout,
+        'allow_interruptions': _allowInterruptions,
+        'min_endpointing_delay': _minEndpointingDelay,
       };
 
       final res = await http.post(
@@ -294,16 +301,6 @@ class _SettingsModalState extends State<SettingsModal> {
                       options: _models.isNotEmpty ? _models : [_model],
                       onChanged: (v) => setState(() => _model = v ?? _model),
                     ),
-
-                    // Wake Greetings
-                    _buildLabel('Wake Greetings (one per line)'),
-                    TextFormField(
-                      controller: _wakeGreetingsController,
-                      maxLines: 4,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: _inputDecoration(),
-                    ),
-                    const SizedBox(height: 16),
 
                     // Numeric settings row 1
                     Row(
@@ -427,7 +424,116 @@ class _SettingsModalState extends State<SettingsModal> {
                                 ),
                               ],
                             ),
+                            // Wake Greetings
+                            const Text(
+                              'Wake Greetings (one per line)',
+                              style: TextStyle(color: Colors.white54, fontSize: 12),
+                            ),
+                            const SizedBox(height: 4),
+                            TextFormField(
+                              controller: _wakeGreetingsController,
+                              maxLines: 4,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: _inputDecoration(),
+                            ),
                           ],
+                        ],
+                      ),
+                    ),
+
+                    // Advanced: Turn Detection Section
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Advanced: Turn Detection',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Allow Interruptions Toggle
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Allow Interruptions',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Interrupt agent while speaking',
+                                    style: TextStyle(
+                                      color: Colors.white38,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Switch(
+                                value: _allowInterruptions,
+                                onChanged: (v) => setState(() => _allowInterruptions = v),
+                                activeTrackColor: const Color(0xFF45997C),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Endpointing Delay Slider
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Endpointing Delay (${_minEndpointingDelay.toStringAsFixed(1)}s)',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const Text(
+                                'Wait time before turn complete',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFF45997C),
+                                  thumbColor: const Color(0xFF45997C),
+                                  inactiveTrackColor: Colors.white24,
+                                ),
+                                child: Slider(
+                                  value: _minEndpointingDelay,
+                                  min: 0.1,
+                                  max: 2.0,
+                                  divisions: 19,
+                                  onChanged: (v) => setState(() => _minEndpointingDelay = v),
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: const [
+                                  Text('Fast (0.1s)', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                  Text('Slow (2.0s)', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                                ],
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

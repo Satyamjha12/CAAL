@@ -19,6 +19,9 @@ interface Settings {
   wake_word_model: string;
   wake_word_threshold: number;
   wake_word_timeout: number;
+  // Turn detection (advanced)
+  allow_interruptions: boolean;
+  min_endpointing_delay: number;
 }
 
 interface SettingsModalProps {
@@ -40,6 +43,9 @@ const DEFAULT_SETTINGS: Settings = {
   wake_word_model: 'models/hey_cal.onnx',
   wake_word_threshold: 0.5,
   wake_word_timeout: 3.0,
+  // Turn detection (advanced)
+  allow_interruptions: true,
+  min_endpointing_delay: 0.5,
 };
 
 const DEFAULT_PROMPT = `# Voice Assistant
@@ -270,17 +276,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 />
               </div>
 
-              {/* Wake Greetings */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Wake Greetings (one per line)</label>
-                <textarea
-                  value={settings.wake_greetings.join('\n')}
-                  onChange={(e) => handleWakeGreetingsChange(e.target.value)}
-                  rows={4}
-                  className="border-input bg-background w-full rounded-md border px-3 py-2"
-                />
-              </div>
-
               {/* Model */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">Model</label>
@@ -460,14 +455,97 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         />
                       </div>
                     </div>
+
+                    {/* Wake Greetings */}
+                    <div className="space-y-1">
+                      <label className="text-muted-foreground text-xs">
+                        Wake Greetings (one per line)
+                      </label>
+                      <textarea
+                        value={settings.wake_greetings.join('\n')}
+                        onChange={(e) => handleWakeGreetingsChange(e.target.value)}
+                        rows={3}
+                        className="border-input bg-background w-full rounded-md border px-2 py-1 text-sm"
+                      />
+                    </div>
                   </>
                 )}
               </div>
 
+              {/* Advanced: Turn Detection */}
+              <div className="border-input dark:border-muted space-y-3 rounded-md border p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Advanced: Turn Detection</label>
+                    <p className="text-muted-foreground text-xs">
+                      Control how the agent detects when you&apos;re done speaking
+                    </p>
+                  </div>
+                </div>
+
+                {/* Allow Interruptions Toggle */}
+                <div className="flex items-center justify-between pt-2">
+                  <div>
+                    <label className="text-muted-foreground text-xs">Allow Interruptions</label>
+                    <p className="text-muted-foreground text-xs">
+                      Interrupt the agent while speaking
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={settings.allow_interruptions}
+                    onClick={() =>
+                      setSettings({
+                        ...settings,
+                        allow_interruptions: !settings.allow_interruptions,
+                      })
+                    }
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                      settings.allow_interruptions ? 'bg-primary' : 'bg-muted'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        settings.allow_interruptions ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Endpointing Delay */}
+                <div className="space-y-1">
+                  <label className="text-muted-foreground text-xs">
+                    Endpointing Delay ({settings.min_endpointing_delay}s)
+                  </label>
+                  <p className="text-muted-foreground text-xs">
+                    Seconds to wait before considering your turn complete
+                  </p>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="2.0"
+                    step="0.1"
+                    value={settings.min_endpointing_delay}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        min_endpointing_delay: parseFloat(e.target.value) || 0.5,
+                      })
+                    }
+                    className="w-full accent-[#45997c]"
+                  />
+                  <div className="text-muted-foreground flex justify-between text-xs">
+                    <span>Fast (0.1s)</span>
+                    <span>Slow (2.0s)</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Note about session restart */}
               <p className="text-muted-foreground text-xs">
-                Note: Model, context size, prompt, and wake word changes take effect on next
-                session.
+                Note: Model, context size, prompt, wake word, and turn detection changes take effect
+                on next session.
               </p>
             </>
           )}

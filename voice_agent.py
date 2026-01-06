@@ -104,6 +104,9 @@ def get_runtime_settings() -> dict:
         "num_ctx": settings.get("num_ctx", int(os.getenv("OLLAMA_NUM_CTX", "8192"))),
         "max_turns": settings.get("max_turns", int(os.getenv("OLLAMA_MAX_TURNS", "20"))),
         "tool_cache_size": settings.get("tool_cache_size", int(os.getenv("TOOL_CACHE_SIZE", "3"))),
+        # Turn detection settings
+        "allow_interruptions": settings.get("allow_interruptions", True),
+        "min_endpointing_delay": settings.get("min_endpointing_delay", 0.5),
     }
 
 
@@ -246,6 +249,10 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         f"  LLM: Ollama ({runtime['model']}, think={OLLAMA_THINK}, num_ctx={runtime['num_ctx']})"
     )
     logger.info(f"  MCP: {list(mcp_servers.keys()) or 'None'}")
+    logger.info(
+        f"  Turn detection: interruptions={runtime['allow_interruptions']}, "
+        f"endpointing_delay={runtime['min_endpointing_delay']}s"
+    )
     logger.info("=" * 60)
 
     # Build STT - optionally wrapped with wake word detection
@@ -341,7 +348,8 @@ async def entrypoint(ctx: agents.JobContext) -> None:
             voice=runtime["tts_voice"],
         ),
         vad=silero.VAD.load(),
-        allow_interruptions=False,  # Prevent background noise from interrupting agent
+        allow_interruptions=runtime["allow_interruptions"],
+        min_endpointing_delay=runtime["min_endpointing_delay"],
     )
     logger.info(f"  Session STT: {type(session.stt).__name__}")
 
