@@ -375,9 +375,7 @@ async def _get_mcp_tools(mcp_server) -> list[dict]:
                     }
                 )
 
-        if tools:
-            tool_names = [t["function"]["name"] for t in tools]
-            logger.info(f"Loaded {len(tools)} MCP tools: {', '.join(tool_names)}")
+        # Don't log here - caller logs the summary
 
     except Exception as e:
         logger.warning(f"Error getting MCP tools: {e}")

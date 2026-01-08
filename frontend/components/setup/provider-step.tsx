@@ -69,9 +69,13 @@ export function ProviderStep({ data, updateData }: ProviderStepProps) {
       if (result.success) {
         setTestStatus('success');
         setGroqModels(result.models || []);
-        // Auto-select first model if none selected
+        // Auto-select preferred model or first available
         if (!data.groq_model && result.models?.length > 0) {
-          updateData({ groq_model: result.models[0] });
+          const preferredModel = 'openai/gpt-oss-20b';
+          const selectedModel = result.models.includes(preferredModel)
+            ? preferredModel
+            : result.models[0];
+          updateData({ groq_model: selectedModel });
         }
       } else {
         setTestStatus('error');

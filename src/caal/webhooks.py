@@ -850,35 +850,57 @@ async def test_hass(req: TestHassRequest) -> TestConnectionResponse:
 
 @app.post("/setup/test-n8n", response_model=TestConnectionResponse)
 async def test_n8n(req: TestN8nRequest) -> TestConnectionResponse:
-    """Test n8n MCP connection.
+    """Test n8n MCP connection and count available workflows.
 
     Args:
-        req: TestN8nRequest with URL and optional token
+        req: TestN8nRequest with URL and token
 
     Returns:
         TestConnectionResponse with success status and workflow count
     """
     try:
-        headers = {}
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+        }
         if req.token:
             headers["Authorization"] = f"Bearer {req.token}"
 
         async with httpx.AsyncClient() as client:
-            # Try to connect to n8n MCP endpoint
-            response = await client.get(
+            # MCP protocol: call search_workflows tool via JSON-RPC
+            response = await client.post(
                 req.url,
                 headers=headers,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "search_workflows",
+                        "arguments": {},
+                    },
+                },
                 timeout=10.0,
             )
-            # n8n MCP might return various status codes, just check connectivity
+
             if response.status_code == 401:
                 return TestConnectionResponse(
-                    success=False, error="Invalid authentication token"
+                    success=False, error="Invalid access token"
                 )
+            response.raise_for_status()
 
-            # Try to get workflow count if possible
-            # n8n MCP discovery happens via SSE, so we just verify connectivity
-            return TestConnectionResponse(success=True, workflow_count=0)
+            data = response.json()
+            # MCP response contains result with content array
+            # Content[0].text is JSON with {data: [...], count: N}
+            content = data.get("result", {}).get("content", [])
+            if content and content[0].get("type") == "text":
+                import json
+                workflows_data = json.loads(content[0].get("text", "{}"))
+                workflow_count = workflows_data.get("count", 0)
+            else:
+                workflow_count = 0
+
+            return TestConnectionResponse(success=True, workflow_count=workflow_count)
     except httpx.ConnectError:
         return TestConnectionResponse(
             success=False, error=f"Cannot connect to n8n at {req.url}"

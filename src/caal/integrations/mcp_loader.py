@@ -68,7 +68,28 @@ def load_mcp_config(settings: dict[str, Any] | None = None) -> list[MCPServerCon
         except Exception:
             settings = {}
 
-    # 1. n8n MCP Server - settings first, then env vars
+    # 1. Home Assistant MCP Server - settings only
+    hass_enabled = settings.get("hass_enabled", False)
+    if hass_enabled:
+        hass_host = settings.get("hass_host")
+        hass_token = settings.get("hass_token")
+        if hass_host:
+            # Build MCP URL from host
+            hass_mcp_url = f"{hass_host.rstrip('/')}/api/mcp"
+            servers.append(MCPServerConfig(
+                name="home_assistant",
+                url=hass_mcp_url,
+                auth_token=hass_token,
+                transport="streamable_http",  # HASS MCP uses Streamable HTTP
+                timeout=10.0,
+            ))
+            logger.debug(f"Loaded MCP server config: home_assistant ({hass_mcp_url})")
+        else:
+            logger.warning("Home Assistant enabled but no host configured")
+    else:
+        logger.info("Home Assistant not configured - HASS MCP tools will not be available")
+
+    # 2. n8n MCP Server - settings first, then env vars
     n8n_enabled = settings.get("n8n_enabled", False)
     n8n_url = settings.get("n8n_url") if n8n_enabled else None
     n8n_token = settings.get("n8n_token") if n8n_enabled else None
@@ -90,7 +111,7 @@ def load_mcp_config(settings: dict[str, Any] | None = None) -> list[MCPServerCon
     else:
         logger.info("n8n not configured - n8n MCP tools will not be available")
 
-    # 2. Additional MCP servers from JSON config (optional)
+    # 3. Additional MCP servers from JSON config (optional)
     config_path = Path("mcp_servers.json")
     if config_path.exists():
         try:

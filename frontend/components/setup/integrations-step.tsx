@@ -79,7 +79,7 @@ export function IntegrationsStep({ data, updateData }: IntegrationsStepProps) {
 
   // Test n8n connection
   const testN8n = useCallback(async () => {
-    if (!data.n8n_url) return;
+    if (!data.n8n_url || !data.n8n_token) return;
 
     setN8nTest({ status: 'testing', error: null, info: null });
 
@@ -95,14 +95,11 @@ export function IntegrationsStep({ data, updateData }: IntegrationsStepProps) {
       const result = await response.json();
 
       if (result.success) {
-        const workflowInfo =
-          result.workflow_count !== undefined && result.workflow_count > 0
-            ? `Connected - ${result.workflow_count} workflows`
-            : 'Connected';
+        const workflowCount = result.workflow_count ?? 0;
         setN8nTest({
           status: 'success',
           error: null,
-          info: workflowInfo,
+          info: `Connected - ${workflowCount} workflows`,
         });
       } else {
         setN8nTest({
@@ -237,18 +234,18 @@ export function IntegrationsStep({ data, updateData }: IntegrationsStepProps) {
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-muted-foreground text-xs">API Token (optional)</label>
+              <label className="text-muted-foreground text-xs">Access Token</label>
               <div className="flex gap-2">
                 <input
                   type="password"
                   value={data.n8n_token}
                   onChange={(e) => updateData({ n8n_token: e.target.value })}
-                  placeholder="Optional"
+                  placeholder="n8n_api_..."
                   className="border-input bg-background flex-1 rounded-md border px-3 py-2 text-sm"
                 />
                 <button
                   onClick={testN8n}
-                  disabled={!data.n8n_url || n8nTest.status === 'testing'}
+                  disabled={!data.n8n_url || !data.n8n_token || n8nTest.status === 'testing'}
                   className="bg-muted hover:bg-muted/80 flex items-center gap-2 rounded-md px-3 py-2 text-sm disabled:opacity-50"
                 >
                   <StatusIcon status={n8nTest.status} />
