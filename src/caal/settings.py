@@ -56,7 +56,8 @@ DEFAULT_SETTINGS = {
     "ollama_host": "http://localhost:11434",
     "ollama_model": "ministral-3:8b",
     "num_ctx": 8192,
-    # Groq settings (api key stored separately, not returned via GET /settings)
+    # Groq settings
+    "groq_api_key": "",  # API key from console.groq.com
     "groq_model": "llama-3.3-70b-versatile",
     # Home Assistant integration
     "hass_enabled": False,
@@ -80,7 +81,7 @@ DEFAULT_SETTINGS = {
 }
 
 # Keys that should never be returned via API (security)
-SENSITIVE_KEYS = {"hass_token", "n8n_token"}
+SENSITIVE_KEYS = {"groq_api_key", "hass_token", "n8n_token"}
 
 # Cached settings (reloaded on save)
 _settings_cache: dict | None = None

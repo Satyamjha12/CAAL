@@ -863,13 +863,12 @@ async def complete_setup(req: SetupCompleteRequest) -> SetupCompleteResponse:
         # Mark setup as complete
         current["first_launch_completed"] = True
 
+        # Save Groq API key to settings (before save_settings call)
+        if req.groq_api_key:
+            current["groq_api_key"] = req.groq_api_key
+
         # Save settings
         settings_module.save_settings(current)
-
-        # Store Groq API key in environment (not in settings.json for security)
-        if req.groq_api_key:
-            os.environ["GROQ_API_KEY"] = req.groq_api_key
-            # TODO: Persist to .env file or secure storage
 
         logger.info("First-launch setup completed")
         return SetupCompleteResponse(success=True, message="Setup completed successfully")

@@ -128,6 +128,7 @@ def get_runtime_settings() -> dict:
         "num_ctx": settings.get("num_ctx", int(os.getenv("OLLAMA_NUM_CTX", "8192"))),
         "think": OLLAMA_THINK,  # Only applies to Ollama
         # Groq settings
+        "groq_api_key": settings.get("groq_api_key") or os.getenv("GROQ_API_KEY", ""),
         "groq_model": user_settings.get("groq_model") or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
         # Shared settings
         "max_turns": settings.get("max_turns", int(os.getenv("OLLAMA_MAX_TURNS", "20"))),

@@ -109,9 +109,11 @@ def create_provider_from_settings(settings: dict[str, Any]) -> LLMProvider:
             num_ctx=settings.get("num_ctx", 8192),
         )
     elif provider_name == "groq":
+        # API key from settings, fallback to environment variable
+        api_key = settings.get("groq_api_key") or os.environ.get("GROQ_API_KEY")
         return GroqProvider(
             model=settings.get("groq_model", "llama-3.3-70b-versatile"),
-            api_key=os.environ.get("GROQ_API_KEY"),
+            api_key=api_key,
             temperature=settings.get("temperature", 0.7),
         )
     else:
