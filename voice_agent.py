@@ -53,7 +53,6 @@ from caal.integrations import (
     discover_n8n_workflows,
 )
 from caal.llm import llm_node, ToolDataCache
-from caal import session_registry
 from caal.stt import WakeWordGatedSTT
 
 # Configure logging - LiveKit adds LogQueueHandler to root in worker processes,
@@ -663,8 +662,63 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         logger.info(f"Session closed: {ev.reason}")
         close_event.set()
 
-    # Register session for webhook access
-    session_registry.register(ctx.room.name, session, assistant)
+    # ==========================================================================
+    # Webhook Command Handler (via LiveKit data channel)
+    # ==========================================================================
+
+    async def _handle_webhook_command(data: rtc.DataPacket) -> None:
+        """Handle commands from webhook server via LiveKit data channel."""
+        if data.topic != "webhook_command":
+            return
+
+        try:
+            import json
+
+            cmd = json.loads(data.data.decode("utf-8"))
+            action = cmd.get("action")
+            logger.info(f"Received webhook command: {action}")
+
+            if action == "announce":
+                message = cmd.get("message", "")
+                if message:
+                    await session.say(message)
+
+            elif action == "wake":
+                # Get greeting from settings
+                greetings = get_setting("wake_greetings")
+                greeting = random.choice(greetings)
+                await session.say(greeting)
+
+            elif action == "reload_tools":
+                # Clear agent's internal caches
+                assistant._ollama_tools_cache = None
+
+                # Re-discover n8n workflows if MCP is available
+                n8n_mcp = assistant._caal_mcp_servers.get("n8n")
+                if n8n_mcp and assistant._n8n_base_url:
+                    try:
+                        tools, name_map = await discover_n8n_workflows(
+                            n8n_mcp, assistant._n8n_base_url
+                        )
+                        assistant._n8n_workflow_tools = tools
+                        assistant._n8n_workflow_name_map = name_map
+                        logger.info(f"Reloaded {len(tools)} n8n workflows")
+                    except Exception as e:
+                        logger.error(f"Failed to re-discover n8n workflows: {e}")
+
+                # Announce if requested
+                if msg := cmd.get("message"):
+                    await session.say(msg)
+                elif tool_name := cmd.get("tool_name"):
+                    await session.say(f"A new tool called '{tool_name}' is now available.")
+
+        except Exception as e:
+            logger.error(f"Failed to process webhook command: {e}")
+
+    @ctx.room.on("data_received")
+    def on_data_received(data: rtc.DataPacket) -> None:
+        """Sync wrapper for async webhook command handler."""
+        asyncio.create_task(_handle_webhook_command(data))
 
     # Start session AFTER handlers are registered
     await session.start(
@@ -672,27 +726,22 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         agent=assistant,
     )
 
+    # Send initial greeting with timeout to prevent hanging on unresponsive LLM
     try:
-        # Send initial greeting with timeout to prevent hanging on unresponsive LLM
-        try:
-            await asyncio.wait_for(
-                session.generate_reply(
-                    instructions="Greet the user briefly and let them know you're ready to help."
-                ),
-                timeout=30.0,
-            )
-        except asyncio.TimeoutError:
-            logger.error("Initial greeting timed out (30s) - LLM may be unresponsive")
-            # Continue anyway - user can still speak
+        await asyncio.wait_for(
+            session.generate_reply(
+                instructions="Greet the user briefly and let them know you're ready to help."
+            ),
+            timeout=30.0,
+        )
+    except asyncio.TimeoutError:
+        logger.error("Initial greeting timed out (30s) - LLM may be unresponsive")
+        # Continue anyway - user can still speak
 
-        logger.info("Agent ready - listening for speech...")
+    logger.info("Agent ready - listening for speech...")
 
-        # Wait until session closes (room disconnects, etc.)
-        await close_event.wait()
-
-    finally:
-        # Unregister session on cleanup
-        session_registry.unregister(ctx.room.name)
+    # Wait until session closes (room disconnects, etc.)
+    await close_event.wait()
 
 
 # =============================================================================

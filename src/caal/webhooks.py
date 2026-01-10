@@ -34,13 +34,16 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import logging
 import os
-import random
 
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from livekit import api
+from livekit.protocol.models import DataPacket
+from livekit.protocol.room import SendDataRequest
 from pydantic import BaseModel
 
 from . import settings as settings_module
@@ -61,6 +64,50 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def get_livekit_api() -> api.LiveKitAPI:
+    """Get a LiveKit API client for sending data messages to agents."""
+    return api.LiveKitAPI(
+        url=os.getenv("LIVEKIT_URL", "http://localhost:7880"),
+        api_key=os.getenv("LIVEKIT_API_KEY", "devkey"),
+        api_secret=os.getenv("LIVEKIT_API_SECRET", "secret"),
+    )
+
+
+async def send_agent_command(room_name: str, command: dict) -> tuple[bool, str | None]:
+    """Send a command to the agent via LiveKit data channel.
+
+    Args:
+        room_name: The room to send to
+        command: Dict with 'action' and other fields
+
+    Returns:
+        Tuple of (success, error_message)
+    """
+    lk = None
+    try:
+        lk = get_livekit_api()
+        payload = json.dumps(command)
+        await lk.room.send_data(
+            SendDataRequest(
+                room=room_name,
+                data=payload.encode("utf-8"),
+                kind=DataPacket.Kind.RELIABLE,
+                topic="webhook_command",
+            )
+        )
+        return True, None
+    except Exception as e:
+        error_msg = str(e)
+        # Check for common error patterns
+        if "no response from servers" in error_msg or "503" in error_msg:
+            error_msg = f"No active session in room: {room_name}"
+        logger.error(f"Failed to send agent command: {error_msg}")
+        return False, error_msg
+    finally:
+        if lk:
+            await lk.aclose()
 
 
 class AnnounceRequest(BaseModel):
@@ -117,8 +164,8 @@ class HealthResponse(BaseModel):
 async def announce(req: AnnounceRequest) -> AnnounceResponse:
     """Make the agent speak a message.
 
-    This endpoint injects an announcement into an active voice session.
-    The agent will speak the provided message using TTS.
+    This endpoint sends an announcement command to the agent via LiveKit
+    data channel. The agent will speak the provided message using TTS.
 
     Args:
         req: AnnounceRequest with message and optional room_name
@@ -127,33 +174,28 @@ async def announce(req: AnnounceRequest) -> AnnounceResponse:
         AnnounceResponse with status
 
     Raises:
-        HTTPException: 404 if no active session in the specified room
+        HTTPException: 404 if no active session, 500 if failed to send
     """
-    from . import session_registry
-
-    result = session_registry.get(req.room_name)
-    if not result:
-        logger.warning(f"Announce failed: no session in room {req.room_name}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"No active session in room: {req.room_name}",
-        )
-
-    session, _agent = result
     logger.info(f"Announcing to room {req.room_name}: {req.message[:50]}...")
 
-    # Say the message directly (bypasses LLM for instant response)
-    await session.say(req.message)
+    success, error = await send_agent_command(
+        req.room_name,
+        {"action": "announce", "message": req.message},
+    )
 
-    return AnnounceResponse(status="announced", room_name=req.room_name)
+    if not success:
+        status_code = 404 if "No active session" in (error or "") else 500
+        raise HTTPException(status_code=status_code, detail=error)
+
+    return AnnounceResponse(status="queued", room_name=req.room_name)
 
 
 @app.post("/reload-tools", response_model=ReloadToolsResponse)
 async def reload_tools(req: ReloadToolsRequest) -> ReloadToolsResponse:
     """Refresh MCP tool cache and optionally announce new tool availability.
 
-    This endpoint clears the n8n workflow cache and re-discovers available
-    workflows. Optionally announces the change:
+    This endpoint sends a reload command to the agent via LiveKit data channel.
+    The agent will clear caches, re-discover workflows, and optionally announce:
     - If `message` is provided, speaks that exact message
     - If only `tool_name` is provided, speaks "A new tool called '{tool_name}' is now available."
     - If neither is provided, reloads silently
@@ -162,53 +204,30 @@ async def reload_tools(req: ReloadToolsRequest) -> ReloadToolsResponse:
         req: ReloadToolsRequest with optional message, tool_name, and room_name
 
     Returns:
-        ReloadToolsResponse with status and tool count
+        ReloadToolsResponse with status
 
     Raises:
-        HTTPException: 404 if no active session in the specified room
+        HTTPException: 500 if failed to send command
     """
-    from . import session_registry
-    from .integrations import n8n
-
-    result = session_registry.get(req.room_name)
-    if not result:
-        logger.warning(f"Reload failed: no session in room {req.room_name}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"No active session in room: {req.room_name}",
-        )
-
-    session, agent = result
     logger.info(f"Reloading tools for room {req.room_name}")
 
-    # Clear all caches
-    agent._ollama_tools_cache = None
-    n8n.clear_caches()
+    success, error = await send_agent_command(
+        req.room_name,
+        {
+            "action": "reload_tools",
+            "message": req.message,
+            "tool_name": req.tool_name,
+        },
+    )
 
-    # Re-discover n8n workflows if MCP is configured
-    tool_count = 0
-    n8n_mcp = agent._caal_mcp_servers.get("n8n")
-    if n8n_mcp and agent._n8n_base_url:
-        try:
-            tools, name_map = await n8n.discover_n8n_workflows(
-                n8n_mcp, agent._n8n_base_url
-            )
-            agent._n8n_workflow_tools = tools
-            agent._n8n_workflow_name_map = name_map
-            tool_count = len(tools)
-            logger.info(f"Discovered {tool_count} n8n workflows")
-        except Exception as e:
-            logger.error(f"Failed to re-discover n8n workflows: {e}")
+    if not success:
+        status_code = 404 if "No active session" in (error or "") else 500
+        raise HTTPException(status_code=status_code, detail=error)
 
-    # Announce: custom message takes priority, then tool_name format
-    if req.message:
-        await session.say(req.message)
-    elif req.tool_name:
-        await session.say(f"A new tool called '{req.tool_name}' is now available.")
-
+    # Tool count is now handled agent-side, return 0 as placeholder
     return ReloadToolsResponse(
-        status="reloaded",
-        tool_count=tool_count,
+        status="queued",
+        tool_count=0,
         room_name=req.room_name,
     )
 
@@ -217,7 +236,10 @@ async def reload_tools(req: ReloadToolsRequest) -> ReloadToolsResponse:
 async def wake(req: WakeRequest) -> WakeResponse:
     """Handle wake word detection - greet the user.
 
-    This endpoint is primarily for:
+    This endpoint sends a wake command to the agent via LiveKit data channel.
+    The agent will play a random greeting from the configured greetings list.
+
+    This is primarily for:
     - Client-side wake word detection (Picovoice - deprecated)
     - Manual testing via curl
 
@@ -231,39 +253,20 @@ async def wake(req: WakeRequest) -> WakeResponse:
         WakeResponse with status
 
     Raises:
-        HTTPException: 404 if no active session in the specified room
+        HTTPException: 500 if failed to send command
     """
-    from . import session_registry
-
-    result = session_registry.get(req.room_name)
-    if not result:
-        logger.warning(f"Wake failed: no session in room {req.room_name}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"No active session in room: {req.room_name}",
-        )
-
-    session, _agent = result
     logger.info(f"Wake word detected in room {req.room_name}")
 
-    # Get greeting
-    greetings = settings_module.get_setting("wake_greetings")
-    greeting = random.choice(greetings)
+    success, error = await send_agent_command(
+        req.room_name,
+        {"action": "wake"},
+    )
 
-    # Call TTS directly and push to audio output, bypassing agent turn-taking
-    tts = session.tts
-    audio_output = session.output.audio
-    audio_stream = tts.synthesize(greeting)
+    if not success:
+        status_code = 404 if "No active session" in (error or "") else 500
+        raise HTTPException(status_code=status_code, detail=error)
 
-    # Push audio frames directly to the audio output
-    async for event in audio_stream:
-        if hasattr(event, 'frame') and event.frame:
-            await audio_output.capture_frame(event.frame)
-
-    # Flush to complete the segment
-    audio_output.flush()
-
-    return WakeResponse(status="greeted", room_name=req.room_name)
+    return WakeResponse(status="queued", room_name=req.room_name)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -271,13 +274,22 @@ async def health() -> HealthResponse:
     """Health check endpoint.
 
     Returns:
-        HealthResponse with status and list of active session room names
+        HealthResponse with status and list of active room names
     """
-    from . import session_registry
+    try:
+        lk = get_livekit_api()
+        from livekit.protocol.room import ListRoomsRequest
+
+        response = await lk.room.list_rooms(ListRoomsRequest())
+        await lk.aclose()
+        rooms = [room.name for room in response.rooms]
+    except Exception as e:
+        logger.warning(f"Failed to list rooms: {e}")
+        rooms = []
 
     return HealthResponse(
         status="ok",
-        active_sessions=session_registry.list_rooms(),
+        active_sessions=rooms,
     )
 
 
