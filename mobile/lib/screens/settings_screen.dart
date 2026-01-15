@@ -44,7 +44,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _groqModel = '';
   String _ttsProvider = 'kokoro';
   String _ttsVoiceKokoro = 'am_puck';
-  String _ttsVoicePiper = 'speaches-ai/piper-en_US-ljspeech-medium';
+  String _ttsVoicePiper = 'speaches-ai/piper-en_US-ryan-high';
 
   // Integration settings
   bool _hassEnabled = false;

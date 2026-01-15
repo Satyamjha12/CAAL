@@ -100,7 +100,7 @@ services:
     ports:
       - "${SPEACHES_PORT:-8000}:8000"
     volumes:
-      - speaches-cache:/root/.cache/huggingface
+      - speaches-cache:/home/ubuntu/.cache/huggingface
     deploy:
       resources:
         reservations:
@@ -226,6 +226,7 @@ services:
 # =============================================================================
 networks:
   caal-network:
+    name: caal-network
     driver: bridge
 
 # =============================================================================

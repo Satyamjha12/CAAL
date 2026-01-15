@@ -39,7 +39,7 @@ const INITIAL_DATA: SetupData = {
   groq_model: '',
   tts_provider: 'kokoro',
   tts_voice_kokoro: 'am_puck',
-  tts_voice_piper: 'speaches-ai/piper-en_US-ljspeech-medium',
+  tts_voice_piper: 'speaches-ai/piper-en_US-ryan-high',
   hass_enabled: false,
   hass_host: '',
   hass_token: '',

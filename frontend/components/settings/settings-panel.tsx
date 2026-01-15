@@ -63,7 +63,7 @@ const DEFAULT_SETTINGS: Settings = {
   groq_model: '',
   tts_provider: 'kokoro',
   tts_voice_kokoro: 'am_puck',
-  tts_voice_piper: 'speaches-ai/piper-en_US-ljspeech-medium',
+  tts_voice_piper: 'speaches-ai/piper-en_US-ryan-high',
   temperature: 0.7,
   num_ctx: 8192,
   max_turns: 20,
@@ -333,10 +333,11 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     setError(null);
 
     try {
-      // Transform n8n URL
+      // Transform n8n URL and filter empty wake greetings
       const finalSettings = {
         ...settings,
         n8n_url: settings.n8n_enabled ? getN8nMcpUrl(settings.n8n_url) : settings.n8n_url,
+        wake_greetings: settings.wake_greetings.filter((g) => g.trim()),
       };
 
       // Save settings
@@ -395,7 +396,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   };
 
   const handleWakeGreetingsChange = (value: string) => {
-    const greetings = value.split('\n').filter((g) => g.trim());
+    // Keep empty lines while editing so Enter key works
+    // Empty lines are filtered out when saving
+    const greetings = value.split('\n');
     setSettings({ ...settings, wake_greetings: greetings });
   };
 

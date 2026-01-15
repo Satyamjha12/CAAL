@@ -116,7 +116,7 @@ def get_runtime_settings() -> dict:
         # TTS settings
         "tts_provider": user_settings.get("tts_provider") or os.getenv("TTS_PROVIDER", "kokoro"),
         "tts_voice_kokoro": settings.get("tts_voice_kokoro") or os.getenv("TTS_VOICE", "am_puck"),
-        "tts_voice_piper": settings.get("tts_voice_piper") or "speaches-ai/piper-en_US-ljspeech-medium",
+        "tts_voice_piper": settings.get("tts_voice_piper") or "speaches-ai/piper-en_US-ryan-high",
         # STT Provider settings
         "stt_provider": user_settings.get("stt_provider") or os.getenv("STT_PROVIDER", "speaches"),
         # LLM Provider settings - .env overrides default, user setting overrides .env
