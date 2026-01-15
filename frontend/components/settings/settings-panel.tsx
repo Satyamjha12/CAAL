@@ -34,6 +34,7 @@ interface Settings {
   n8n_enabled: boolean;
   n8n_url: string;
   n8n_token: string;
+  n8n_api_key: string;
   // Wake word
   wake_word_enabled: boolean;
   wake_word_model: string;
@@ -74,6 +75,7 @@ const DEFAULT_SETTINGS: Settings = {
   n8n_enabled: false,
   n8n_url: '',
   n8n_token: '',
+  n8n_api_key: '',
   wake_word_enabled: false,
   wake_word_model: 'models/hey_cal.onnx',
   wake_word_threshold: 0.5,
@@ -166,7 +168,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
       if (settingsRes.ok) {
         const data = await settingsRes.json();
-        const loadedSettings = data.settings || DEFAULT_SETTINGS;
+        // Merge with defaults to ensure new fields have values
+        const loadedSettings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
         setSettings(loadedSettings);
         setPromptContent(data.prompt_content || DEFAULT_PROMPT);
         ttsProvider = loadedSettings.tts_provider || 'kokoro';
@@ -967,13 +970,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </p>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Access Token</label>
+              <label className="text-sm font-medium">MCP Token</label>
               <div className="flex gap-2">
                 <input
                   type="password"
                   value={settings.n8n_token}
                   onChange={(e) => setSettings({ ...settings, n8n_token: e.target.value })}
-                  placeholder="n8n_api_..."
+                  placeholder="MCP access token"
                   className="border-input bg-background flex-1 rounded-lg border px-4 py-3 text-sm"
                 />
                 <button
@@ -987,8 +990,24 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   Test
                 </button>
               </div>
+              <p className="text-muted-foreground text-xs">
+                Found in n8n Settings → MCP Servers
+              </p>
               {n8nTest.error && <p className="text-xs text-red-500">{n8nTest.error}</p>}
               {n8nTest.info && <p className="text-xs text-green-500">{n8nTest.info}</p>}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">API Key</label>
+              <input
+                type="password"
+                value={settings.n8n_api_key}
+                onChange={(e) => setSettings({ ...settings, n8n_api_key: e.target.value })}
+                placeholder="n8n API key (optional)"
+                className="border-input bg-background w-full rounded-lg border px-4 py-3 text-sm"
+              />
+              <p className="text-muted-foreground text-xs">
+                Required to install tools from the Tool Registry. Create one in n8n Settings → API.
+              </p>
             </div>
           </div>
         )}

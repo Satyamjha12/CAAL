@@ -66,7 +66,8 @@ DEFAULT_SETTINGS = {
     # n8n integration
     "n8n_enabled": False,
     "n8n_url": "",
-    "n8n_token": "",
+    "n8n_token": "",  # MCP token for tool discovery
+    "n8n_api_key": "",  # API key for workflow creation (Tool Registry)
     # Shared settings
     "max_turns": 20,
     "tool_cache_size": 3,
