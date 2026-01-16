@@ -195,21 +195,8 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
             </p>
             {manifest?.required_credentials.map((c) => (
               <div key={c.name} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">{c.description}</p>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                      c.auth_type === 'predefined'
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-blue-500/20 text-blue-400'
-                    }`}
-                  >
-                    {c.auth_type === 'predefined' ? 'Built-in' : 'Generic'}
-                  </span>
-                </div>
-                <p className="text-muted-foreground text-xs">
-                  Type: {c.credential_type || c.type}
-                </p>
+                <p className="text-sm font-medium">{c.description}</p>
+                <p className="text-muted-foreground text-xs">Type: {c.credential_type}</p>
                 <input
                   type="text"
                   value={credentials[c.name] || ''}
