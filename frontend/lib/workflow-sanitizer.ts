@@ -17,7 +17,7 @@ export interface SanitizationResult {
     }>;
     variables: Array<{
       name: string;
-      example: string;
+      example?: string; // Optional - credential variables don't have examples
       description: string;
     }>;
     secrets_stripped: {
@@ -37,14 +37,24 @@ const SECRET_PATTERNS = [
   { name: 'GitHub PAT', regex: /ghp_[a-zA-Z0-9]{36}/g, type: 'tokens' },
   { name: 'AWS Access Key', regex: /AKIA[0-9A-Z]{16}/g, type: 'api_keys' },
   { name: 'Slack token', regex: /xox[baprs]-[0-9a-zA-Z]{10,}/g, type: 'tokens' },
-  { name: 'Private key', regex: /-----BEGIN\s+(RSA\s+|EC\s+|DSA\s+)?PRIVATE\s+KEY-----/gi, type: 'api_keys' },
+  {
+    name: 'Private key',
+    regex: /-----BEGIN\s+(RSA\s+|EC\s+|DSA\s+)?PRIVATE\s+KEY-----/gi,
+    type: 'api_keys',
+  },
   { name: 'Password', regex: /password\s*[:=]\s*["'][^"']+["']/gi, type: 'passwords' },
 ] as const;
 
 // Expression patterns that reference secrets via n8n expressions
 const EXPRESSION_SECRET_PATTERNS = [
-  { name: 'Environment variable', regex: /\{\{.*\$env\.[A-Z_]*(?:KEY|TOKEN|SECRET|PASSWORD|API)[A-Z_]*.*\}\}/gi },
-  { name: 'JSON secret field', regex: /\{\{.*\$json\.(?:apiKey|api_key|token|secret|password).*\}\}/gi },
+  {
+    name: 'Environment variable',
+    regex: /\{\{.*\$env\.[A-Z_]*(?:KEY|TOKEN|SECRET|PASSWORD|API)[A-Z_]*.*\}\}/gi,
+  },
+  {
+    name: 'JSON secret field',
+    regex: /\{\{.*\$json\.(?:apiKey|api_key|token|secret|password).*\}\}/gi,
+  },
   { name: 'Binary secret field', regex: /\{\{.*\$binary\.(?:key|token|secret).*\}\}/gi },
 ] as const;
 
@@ -194,28 +204,46 @@ function extractCredentials(workflow: WorkflowData): Array<{
 }
 
 /**
- * Nullify credential IDs but keep names for reference
+ * Nullify credential IDs and parameterize credential names
+ * Returns the modified workflow and a list of credential variables
  */
-function nullifyCredentialIds(workflow: WorkflowData): WorkflowData {
-  const toolName = workflow.name?.replace(/[^a-zA-Z0-9_-]/g, '-') || 'tool';
+function parameterizeCredentials(workflow: WorkflowData): {
+  workflow: WorkflowData;
+  credentialVariables: Array<{ name: string; description: string }>;
+} {
+  const credentialVariables: Array<{ name: string; description: string }> = [];
+  const seenCredTypes = new Set<string>();
 
-  if (!workflow.nodes) return workflow;
+  if (!workflow.nodes) return { workflow, credentialVariables };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   workflow.nodes = workflow.nodes.map((node: any) => {
     if (node.credentials) {
-      for (const [credType, credInfo] of Object.entries(node.credentials)) {
+      for (const [credType] of Object.entries(node.credentials)) {
+        // Generate variable name from credential type
+        // e.g., googleCalendarOAuth2Api -> GOOGLE_CALENDAR_OAUTH2_API_CREDENTIAL
+        const varName = credType.toUpperCase().replace(/([a-z])([A-Z])/g, '$1_$2') + '_CREDENTIAL';
+
+        // Add to variables list (once per credential type)
+        if (!seenCredTypes.has(credType)) {
+          seenCredTypes.add(credType);
+          credentialVariables.push({
+            name: varName,
+            description: `Your ${credType} credential name`,
+          });
+        }
+
+        // Parameterize the credential (strip original name completely)
         node.credentials[credType] = {
           id: null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          name: (credInfo as any)?.name || `${toolName}_credential`,
+          name: `\${${varName}}`,
         };
       }
     }
     return node;
   });
 
-  return workflow;
+  return { workflow, credentialVariables };
 }
 
 /**
@@ -296,14 +324,19 @@ export function sanitizeWorkflow(workflow: WorkflowData): SanitizationResult {
     setNestedProperty(sanitized, rl.path, convertResourceLocatorToId(`\${${variable.name}}`));
   }
 
-  // 8. Nullify credential IDs
-  sanitized = nullifyCredentialIds(sanitized);
+  // 8. Parameterize credentials (nullify IDs and replace names with variables)
+  const { workflow: sanitizedWithCreds, credentialVariables } = parameterizeCredentials(sanitized);
+  sanitized = sanitizedWithCreds;
 
-  // 9. Strip instanceId from meta (user-specific)
-  if (sanitized.meta?.instanceId) {
-    delete sanitized.meta.instanceId;
-    warnings.push('Removed instance-specific metadata');
-  }
+  // 9. Strip all instance-specific and read-only fields
+  // Only keep what's needed to recreate the workflow
+  const cleanWorkflow = {
+    name: sanitized.name,
+    nodes: sanitized.nodes,
+    connections: sanitized.connections,
+    settings: sanitized.settings || {},
+  };
+  sanitized = cleanWorkflow;
 
   // 10. Check for webhook description
   const webhookNode = sanitized.nodes?.find(

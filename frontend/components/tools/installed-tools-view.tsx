@@ -5,6 +5,8 @@ import { ArrowClockwise, Warning } from '@phosphor-icons/react/dist/ssr';
 import { type SanitizationResult, sanitizeWorkflow } from '@/lib/workflow-sanitizer';
 import type { ToolIndexEntry } from '@/types/tools';
 import { InstalledToolCard } from './installed-tool-card';
+import { ToolDetailModal } from './tool-detail-modal';
+import { WorkflowDetailModal } from './workflow-detail-modal';
 import { WorkflowSubmissionDialog } from './workflow-submission-dialog';
 
 interface N8nWorkflow {
@@ -29,6 +31,8 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
   const [submittingWorkflow, setSubmittingWorkflow] = useState<N8nWorkflow | null>(null);
   const [sanitizationResult, setSanitizationResult] = useState<SanitizationResult | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedTool, setSelectedTool] = useState<ToolIndexEntry | null>(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<N8nWorkflow | null>(null);
 
   const fetchWorkflows = useCallback(async () => {
     if (!n8nEnabled) {
@@ -78,6 +82,10 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
     try {
       // Sanitize workflow locally
       const result = sanitizeWorkflow(workflow.workflow);
+
+      console.log('Sanitization result:', result);
+      console.log('Detected credentials:', result.detected.credentials);
+      console.log('Detected variables:', result.detected.variables);
 
       // Show confirmation dialog
       setSubmittingWorkflow(workflow);
@@ -131,6 +139,27 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
     setSubmitError(null);
   }, []);
 
+  const handleCardClick = useCallback(
+    (workflow: N8nWorkflow) => {
+      // Convert workflow name to kebab-case to find matching registry tool
+      const kebabName = workflow.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      const matchingTool = registryTools.find((tool) => tool.name === kebabName);
+
+      if (matchingTool) {
+        // Show registry tool detail modal
+        setSelectedTool(matchingTool);
+      } else {
+        // Show custom workflow detail modal
+        setSelectedWorkflow(workflow);
+      }
+    },
+    [registryTools]
+  );
+
   // Loading state
   if (loading) {
     return (
@@ -176,9 +205,28 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
             workflow={workflow}
             isFromRegistry={isInRegistry(workflow)}
             onShare={handleShare}
+            onClick={handleCardClick}
           />
         ))}
       </div>
+
+      {/* Tool detail modal (for registry tools) */}
+      {selectedTool && (
+        <ToolDetailModal
+          tool={selectedTool}
+          onClose={() => setSelectedTool(null)}
+          onInstall={() => {}}
+          n8nEnabled={n8nEnabled}
+        />
+      )}
+
+      {/* Workflow detail modal (for custom workflows) */}
+      {selectedWorkflow && (
+        <WorkflowDetailModal
+          workflow={selectedWorkflow}
+          onClose={() => setSelectedWorkflow(null)}
+        />
+      )}
 
       {/* Submission dialog */}
       {submittingWorkflow && sanitizationResult && (

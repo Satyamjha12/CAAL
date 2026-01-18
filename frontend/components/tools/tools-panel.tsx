@@ -103,7 +103,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
               onClick={() => setCurrentView('browse')}
               className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 currentView === 'browse'
-                  ? 'border-blue-500 text-blue-400'
+                  ? 'border-primary text-primary'
                   : 'text-muted-foreground hover:text-foreground border-transparent'
               }`}
             >
@@ -113,7 +113,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
               onClick={() => setCurrentView('installed')}
               className={`border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 currentView === 'installed'
-                  ? 'border-blue-500 text-blue-400'
+                  ? 'border-primary text-primary'
                   : 'text-muted-foreground hover:text-foreground border-transparent'
               }`}
             >

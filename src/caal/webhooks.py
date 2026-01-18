@@ -778,6 +778,7 @@ class SetupCompleteRequest(BaseModel):
     n8n_enabled: bool | None = None
     n8n_url: str | None = None
     n8n_token: str | None = None
+    n8n_api_key: str | None = None
 
 
 class SetupCompleteResponse(BaseModel):
@@ -880,6 +881,8 @@ async def complete_setup(req: SetupCompleteRequest) -> SetupCompleteResponse:
                     current["n8n_url"] = req.n8n_url
                 if req.n8n_token:
                     current["n8n_token"] = req.n8n_token
+                if req.n8n_api_key:
+                    current["n8n_api_key"] = req.n8n_api_key
 
         # TTS provider and voice settings
         current["tts_provider"] = req.tts_provider
@@ -1087,8 +1090,12 @@ class N8nWorkflowsResponse(BaseModel):
 async def get_n8n_workflows() -> N8nWorkflowsResponse:
     """Get all n8n workflows with full workflow JSON.
 
-    This endpoint calls the n8n MCP server to fetch all workflows
-    and their full JSON for use in the frontend's installed tools view.
+    This endpoint:
+    1. Calls n8n MCP server to search for workflows (get list)
+    2. Fetches full workflow details via n8n REST API (includes credentials)
+
+    MCP returns sanitized workflows, but we need the full workflow JSON
+    with credential info for the Tool Registry submission sanitizer.
 
     Returns:
         N8nWorkflowsResponse with list of workflows
@@ -1100,14 +1107,19 @@ async def get_n8n_workflows() -> N8nWorkflowsResponse:
 
     # Check if n8n is enabled and configured
     n8n_enabled = settings.get("n8n_enabled", False)
-    n8n_url = settings.get("n8n_url", "")
+    n8n_mcp_url = settings.get("n8n_url", "")
     n8n_token = settings.get("n8n_token", "")
+    n8n_api_key = settings.get("n8n_api_key", "")
 
-    if not n8n_enabled or not n8n_url:
+    if not n8n_enabled or not n8n_mcp_url:
         raise HTTPException(
             status_code=400,
             detail="n8n not configured. Enable n8n in settings first.",
         )
+
+    # Extract base n8n URL (strip /mcp-server/http suffix)
+    # e.g., http://192.168.86.47:5678/mcp-server/http -> http://192.168.86.47:5678
+    n8n_base_url = n8n_mcp_url.replace("/mcp-server/http", "").rstrip("/")
 
     try:
         # Prepare headers for MCP requests
@@ -1123,7 +1135,7 @@ async def get_n8n_workflows() -> N8nWorkflowsResponse:
         async with httpx.AsyncClient() as client:
             # Step 1: Call search_workflows MCP tool
             search_response = await client.post(
-                n8n_url,
+                n8n_mcp_url,
                 headers=headers,
                 json={
                     "jsonrpc": "2.0",
@@ -1161,46 +1173,36 @@ async def get_n8n_workflows() -> N8nWorkflowsResponse:
 
             logger.info(f"Found {len(workflow_list)} n8n workflows")
 
-            # Step 2: For each workflow, get full details
+            # Step 2: For each workflow, get full details via REST API (not MCP)
+            # MCP returns sanitized workflows without credential info
+            # REST API returns complete workflow JSON with credentials
             for wf in workflow_list:
                 wf_id = wf["id"]
                 wf_name = wf["name"]
 
                 try:
-                    # Call get_workflow_details MCP tool
-                    details_response = await client.post(
-                        n8n_url,
-                        headers=headers,
-                        json={
-                            "jsonrpc": "2.0",
-                            "id": wf_id,
-                            "method": "tools/call",
-                            "params": {
-                                "name": "get_workflow_details",
-                                "arguments": {"workflowId": wf_id},
-                            },
-                        },
+                    # Fetch workflow via n8n REST API
+                    api_headers = {}
+                    if n8n_api_key:
+                        api_headers["X-N8N-API-KEY"] = n8n_api_key
+
+                    workflow_url = f"{n8n_base_url}/api/v1/workflows/{wf_id}"
+                    logger.debug(f"Fetching workflow from: {workflow_url}")
+
+                    details_response = await client.get(
+                        workflow_url,
+                        headers=api_headers,
                         timeout=30.0,
                     )
                     details_response.raise_for_status()
 
-                    # Parse SSE response for workflow details
-                    details_text = details_response.text
-                    workflow_full = {}
+                    # Parse JSON response from REST API
+                    workflow_full = details_response.json()
 
-                    for line in details_text.split('\n'):
-                        if line.startswith('data: '):
-                            try:
-                                sse_data = json.loads(line[6:])
-                                if "result" in sse_data and "content" in sse_data["result"]:
-                                    content = sse_data["result"]["content"]
-                                    if isinstance(content, list) and len(content) > 0:
-                                        workflow_full = json.loads(content[0]["text"])
-                                        break
-                            except (json.JSONDecodeError, KeyError, IndexError):
-                                continue
+                    # Debug: Log raw response to see credential structure
+                    logger.debug(f"Raw workflow response for {wf_name}: {json.dumps(workflow_full, indent=2)[:2000]}")
 
-                    # Unwrap workflow if MCP returns { workflow: {...} } structure
+                    # Extract the workflow data (REST API returns the workflow object directly)
                     workflow_data = workflow_full.get("workflow", workflow_full) if isinstance(workflow_full, dict) else workflow_full
 
                     # Build response item
@@ -1237,7 +1239,7 @@ async def get_n8n_workflows() -> N8nWorkflowsResponse:
     except httpx.ConnectError:
         raise HTTPException(
             status_code=500,
-            detail=f"Cannot connect to n8n at {n8n_url}",
+            detail=f"Cannot connect to n8n at {n8n_base_url}",
         )
     except Exception as e:
         logger.error(f"Failed to fetch n8n workflows: {e}", exc_info=True)

@@ -16,16 +16,25 @@ interface InstalledToolCardProps {
   workflow: N8nWorkflow;
   isFromRegistry: boolean;
   onShare: (workflow: N8nWorkflow) => void;
+  onClick: (workflow: N8nWorkflow) => void;
 }
 
-export function InstalledToolCard({ workflow, isFromRegistry, onShare }: InstalledToolCardProps) {
+export function InstalledToolCard({
+  workflow,
+  isFromRegistry,
+  onShare,
+  onClick,
+}: InstalledToolCardProps) {
   const badgeColor = isFromRegistry
     ? 'bg-green-500/20 text-green-400'
     : 'bg-blue-500/20 text-blue-400';
   const badgeText = isFromRegistry ? 'From Registry' : 'Custom';
 
   return (
-    <div className="bg-card hover:bg-card/80 group relative flex cursor-pointer flex-col rounded-xl border p-4 transition-colors">
+    <div
+      onClick={() => onClick(workflow)}
+      className="bg-card hover:border-primary group relative flex cursor-pointer flex-col rounded-xl border p-4 transition-colors"
+    >
       {/* Badge */}
       <div className="mb-3 flex items-center justify-between">
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeColor}`}>
@@ -71,7 +80,7 @@ export function InstalledToolCard({ workflow, isFromRegistry, onShare }: Install
             e.stopPropagation();
             onShare(workflow);
           }}
-          className="hover:bg-primary/90 mt-auto flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium transition-colors"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 mt-auto flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
         >
           <ShareNetwork className="h-4 w-4" weight="bold" />
           Share to Registry

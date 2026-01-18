@@ -30,11 +30,6 @@ export function WorkflowSubmissionDialog({
   onCancel,
 }: WorkflowSubmissionDialogProps) {
   const { detected, warnings } = result;
-  const hasSecrets =
-    detected.secrets_stripped.api_keys +
-      detected.secrets_stripped.tokens +
-      detected.secrets_stripped.passwords >
-    0;
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -65,28 +60,11 @@ export function WorkflowSubmissionDialog({
             <div>
               <p className="font-medium text-green-200">Your secrets never leave your network</p>
               <p className="text-sm text-green-300/80">
-                Sanitization happens locally in your browser before submission.
+                Sanitization happens locally in your browser before submission. Credential IDs are
+                nullified.
               </p>
             </div>
           </div>
-
-          {/* Secrets stripped (if any) */}
-          {hasSecrets && (
-            <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-4">
-              <p className="mb-2 font-medium text-orange-200">Stripped from workflow:</p>
-              <ul className="space-y-1 text-sm text-orange-300/80">
-                {detected.secrets_stripped.api_keys > 0 && (
-                  <li>• {detected.secrets_stripped.api_keys} API key(s)</li>
-                )}
-                {detected.secrets_stripped.tokens > 0 && (
-                  <li>• {detected.secrets_stripped.tokens} bearer token(s)</li>
-                )}
-                {detected.secrets_stripped.passwords > 0 && (
-                  <li>• {detected.secrets_stripped.passwords} password(s)</li>
-                )}
-              </ul>
-            </div>
-          )}
 
           {/* Variables detected */}
           {detected.variables.length > 0 && (
@@ -95,9 +73,19 @@ export function WorkflowSubmissionDialog({
               <ul className="space-y-1 text-sm">
                 {detected.variables.map((v, i) => (
                   <li key={i} className="text-muted-foreground font-mono">
-                    {v.example} → ${'{'}
-                    {v.name}
-                    {'}'}
+                    {v.example ? (
+                      <>
+                        {v.example} → ${'{'}
+                        {v.name}
+                        {'}'}
+                      </>
+                    ) : (
+                      <>
+                        ${'{'}
+                        {v.name}
+                        {'}'} - {v.description}
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -107,13 +95,20 @@ export function WorkflowSubmissionDialog({
           {/* Credentials detected */}
           {detected.credentials.length > 0 && (
             <div className="bg-muted/50 rounded-lg border p-4">
-              <p className="mb-2 font-medium">Credentials detected:</p>
+              <p className="mb-2 font-medium">Credentials found and being parameterized:</p>
               <ul className="space-y-1 text-sm">
-                {detected.credentials.map((c, i) => (
-                  <li key={i} className="text-muted-foreground">
-                    • {c.name} ({c.credential_type})
-                  </li>
-                ))}
+                {detected.credentials.map((c, i) => {
+                  const varName =
+                    c.credential_type.toUpperCase().replace(/([a-z])([A-Z])/g, '$1_$2') +
+                    '_CREDENTIAL';
+                  return (
+                    <li key={i} className="text-muted-foreground font-mono">
+                      {c.name} ({c.credential_type}) → ${'{'}
+                      {varName}
+                      {'}'}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

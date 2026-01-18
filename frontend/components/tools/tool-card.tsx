@@ -26,7 +26,7 @@ export function ToolCard({ tool, onInstall, onClick }: ToolCardProps) {
   return (
     <div
       onClick={() => onClick(tool)}
-      className="bg-muted/30 flex cursor-pointer flex-col rounded-xl border p-4 transition-colors hover:border-blue-500/50"
+      className="bg-muted/30 hover:border-primary flex cursor-pointer flex-col rounded-xl border p-4 transition-colors"
     >
       {/* Header badges */}
       <div className="mb-3 flex items-center justify-between">
