@@ -165,6 +165,49 @@ function detectExpressionSecrets(workflowStr: string): string[] {
 }
 
 /**
+ * Detect secrets in code nodes (jsCode, pythonCode parameters)
+ */
+function detectCodeNodeSecrets(workflow: WorkflowData): {
+  api_keys: number;
+  tokens: number;
+  passwords: number;
+  found: string[];
+} {
+  const counts = {
+    api_keys: 0,
+    tokens: 0,
+    passwords: 0,
+    found: [] as string[],
+  };
+
+  if (!workflow.nodes) return counts;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const node of workflow.nodes as any[]) {
+    // Check for code nodes (n8n-nodes-base.code)
+    if (node.type === 'n8n-nodes-base.code') {
+      const codeContent = node.parameters?.jsCode || node.parameters?.pythonCode || '';
+
+      if (codeContent) {
+        // Scan code content for hardcoded secrets
+        for (const { name, regex, type } of SECRET_PATTERNS) {
+          regex.lastIndex = 0;
+          const matches = codeContent.match(regex);
+          if (matches && matches.length > 0) {
+            counts[type] += matches.length;
+            if (!counts.found.includes(name)) {
+              counts.found.push(name);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return counts;
+}
+
+/**
  * Detect hardcoded URLs in workflow
  */
 function detectUrls(workflowStr: string): string[] {
@@ -256,12 +299,22 @@ export function sanitizeWorkflow(workflow: WorkflowData): SanitizationResult {
   const workflowStr = JSON.stringify(workflow);
   const secrets = detectSecrets(workflowStr);
   const expressionSecrets = detectExpressionSecrets(workflowStr);
+  const codeNodeSecrets = detectCodeNodeSecrets(workflow);
 
-  // CRITICAL: Block if hardcoded secrets found
+  // CRITICAL: Block if hardcoded secrets found in workflow JSON
   if (secrets.found.length > 0) {
     throw new Error(
       `Cannot submit workflow with hardcoded secrets: ${secrets.found.join(', ')}. ` +
         `Please configure these as n8n Credentials in your workflow and re-export.`
+    );
+  }
+
+  // CRITICAL: Block if hardcoded secrets found in code nodes
+  if (codeNodeSecrets.found.length > 0) {
+    throw new Error(
+      `Cannot submit workflow with hardcoded secrets in code nodes: ${codeNodeSecrets.found.join(', ')}. ` +
+        `Please remove hardcoded secrets from your JavaScript/Python code. ` +
+        `Use n8n Credentials or expressions to reference secrets instead.`
     );
   }
 
@@ -356,9 +409,9 @@ export function sanitizeWorkflow(workflow: WorkflowData): SanitizationResult {
       credentials,
       variables: [...urlVariables, ...rlVariables],
       secrets_stripped: {
-        api_keys: secrets.api_keys,
-        tokens: secrets.tokens,
-        passwords: secrets.passwords,
+        api_keys: secrets.api_keys + codeNodeSecrets.api_keys,
+        tokens: secrets.tokens + codeNodeSecrets.tokens,
+        passwords: secrets.passwords + codeNodeSecrets.passwords,
       },
     },
     warnings,
