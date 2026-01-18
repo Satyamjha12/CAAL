@@ -31,6 +31,7 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
   const [submittingWorkflow, setSubmittingWorkflow] = useState<N8nWorkflow | null>(null);
   const [sanitizationResult, setSanitizationResult] = useState<SanitizationResult | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTool, setSelectedTool] = useState<ToolIndexEntry | null>(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState<N8nWorkflow | null>(null);
 
@@ -109,6 +110,9 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
   const handleConfirmSubmission = useCallback(async () => {
     if (!submittingWorkflow || !sanitizationResult) return;
 
+    setIsSubmitting(true);
+    setSubmitError(null);
+
     try {
       // Strip displayHint from variables before sending to VPS (privacy)
       const detectedForApi = {
@@ -147,6 +151,8 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
     } catch (err) {
       console.error('Submission error:', err);
       setSubmitError(err instanceof Error ? err.message : 'Submission failed');
+    } finally {
+      setIsSubmitting(false);
     }
   }, [submittingWorkflow, sanitizationResult]);
 
@@ -252,6 +258,7 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
           workflow={submittingWorkflow}
           result={sanitizationResult}
           error={submitError}
+          isSubmitting={isSubmitting}
           onConfirm={handleConfirmSubmission}
           onCancel={handleCancelSubmission}
         />

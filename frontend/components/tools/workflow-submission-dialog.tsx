@@ -17,6 +17,7 @@ interface WorkflowSubmissionDialogProps {
   workflow: N8nWorkflow;
   result: SanitizationResult;
   error: string | null;
+  isSubmitting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -25,6 +26,7 @@ export function WorkflowSubmissionDialog({
   workflow,
   result,
   error,
+  isSubmitting = false,
   onConfirm,
   onCancel,
 }: WorkflowSubmissionDialogProps) {
@@ -157,16 +159,17 @@ export function WorkflowSubmissionDialog({
         <div className="flex items-center justify-end gap-3 border-t p-6">
           <button
             onClick={onCancel}
-            className="hover:bg-muted rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            disabled={isSubmitting}
+            className="hover:bg-muted rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            disabled={!!error}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!!error || isSubmitting}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Continue to Submission Form
+            {isSubmitting ? 'Preparing submission...' : 'Continue to Submission Form'}
           </button>
         </div>
       </div>
