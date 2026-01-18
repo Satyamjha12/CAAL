@@ -110,13 +110,20 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
     if (!submittingWorkflow || !sanitizationResult) return;
 
     try {
+      // Strip displayHint from variables before sending to VPS (privacy)
+      const detectedForApi = {
+        ...sanitizationResult.detected,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        variables: sanitizationResult.detected.variables.map(({ displayHint, ...rest }) => rest),
+      };
+
       // POST to VPS
       const response = await fetch('https://registry.caal.io/api/submit/intake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           workflow: sanitizationResult.sanitized,
-          detected: sanitizationResult.detected,
+          detected: detectedForApi,
           metadata: {
             installed_name: submittingWorkflow.name,
             n8n_workflow_id: submittingWorkflow.id,

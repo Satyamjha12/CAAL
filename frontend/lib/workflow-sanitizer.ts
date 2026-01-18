@@ -17,8 +17,8 @@ export interface SanitizationResult {
     }>;
     variables: Array<{
       name: string;
-      example?: string; // Optional - credential variables don't have examples
       description: string;
+      displayHint?: string; // For modal display only - NOT sent to VPS
     }>;
     private_urls: string[]; // Private network URLs that will be parameterized by VPS
     secrets_stripped: {
@@ -367,9 +367,10 @@ export function sanitizeWorkflow(workflow: WorkflowData): SanitizationResult {
 
     return {
       name: varName,
-      // DON'T send user's actual value - use generic placeholder
-      // The VPS LLM may suggest a better variable name based on context
       description: `Your ${fieldName} identifier`,
+      // displayHint is for modal UX only - shows what was detected
+      // This is NOT sent to VPS (stripped before API call)
+      displayHint: rl.cachedName || rl.value,
     };
   });
 

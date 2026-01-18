@@ -72,9 +72,10 @@ export function WorkflowSubmissionDialog({
               <ul className="space-y-1 text-sm">
                 {detected.variables.map((v, i) => (
                   <li key={i} className="text-muted-foreground font-mono">
-                    {v.example ? (
+                    {v.displayHint ? (
                       <>
-                        {v.example} → ${'{'}
+                        <span className="text-foreground/80">{v.displayHint}</span>
+                        <span className="text-muted-foreground/60"> → </span>${'{'}
                         {v.name}
                         {'}'}
                       </>
