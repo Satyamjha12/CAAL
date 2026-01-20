@@ -92,7 +92,9 @@ export const TOOL_CATEGORIES = [
   'media',
   'homelab',
   'productivity',
+  'developer',
   'utilities',
+  'sports',
   'social',
   'other',
 ] as const;
@@ -104,7 +106,9 @@ export const CATEGORY_LABELS: Record<ToolCategory, string> = {
   media: 'Media',
   homelab: 'Homelab',
   productivity: 'Productivity',
+  developer: 'Developer',
   utilities: 'Utilities',
+  sports: 'Sports',
   social: 'Social',
   other: 'Other',
 };
@@ -114,7 +118,9 @@ export const CATEGORY_COLORS: Record<ToolCategory, string> = {
   media: 'bg-red-500/20 text-red-400',
   homelab: 'bg-purple-500/20 text-purple-400',
   productivity: 'bg-blue-500/20 text-blue-400',
+  developer: 'bg-cyan-500/20 text-cyan-400',
   utilities: 'bg-gray-500/20 text-gray-400',
+  sports: 'bg-orange-500/20 text-orange-400',
   social: 'bg-pink-500/20 text-pink-400',
   other: 'bg-yellow-500/20 text-yellow-400',
 };
