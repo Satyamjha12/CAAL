@@ -40,7 +40,7 @@ export function ToolCard({ tool, isInstalled, onInstall, onClick }: ToolCardProp
       </div>
 
       {/* Title and description */}
-      <h3 className="mb-1 font-semibold">{tool.name.replace(/-/g, ' ')}</h3>
+      <h3 className="mb-1 truncate font-semibold">{tool.name.replace(/-/g, ' ')}</h3>
       <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">{tool.description}</p>
 
       {/* Voice triggers */}

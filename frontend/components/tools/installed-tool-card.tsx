@@ -63,7 +63,7 @@ export function InstalledToolCard({
       </div>
 
       {/* Title */}
-      <h3 className="mb-2 font-semibold">{workflow.name.replace(/-/g, ' ')}</h3>
+      <h3 className="mb-2 truncate font-semibold">{workflow.name.replace(/-/g, ' ')}</h3>
 
       {/* Version info (for registry tools with updates) */}
       {status.type === 'registry' && !status.upToDate && (
