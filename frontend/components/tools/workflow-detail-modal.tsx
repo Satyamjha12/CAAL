@@ -1,7 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
-import { CheckCircle, Tag, X, XCircle } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, CheckCircle, Tag, X, XCircle } from '@phosphor-icons/react/dist/ssr';
 
 interface N8nWorkflow {
   id: string;
@@ -16,9 +16,15 @@ interface WorkflowDetailModalProps {
   workflow: N8nWorkflow;
   n8nBaseUrl: string;
   onClose: () => void;
+  onShare: (workflow: N8nWorkflow) => void;
 }
 
-export function WorkflowDetailModal({ workflow, n8nBaseUrl, onClose }: WorkflowDetailModalProps) {
+export function WorkflowDetailModal({
+  workflow,
+  n8nBaseUrl,
+  onClose,
+  onShare,
+}: WorkflowDetailModalProps) {
   const workflowUrl = `${n8nBaseUrl}/workflow/${workflow.id}`;
 
   return createPortal(
@@ -113,11 +119,22 @@ export function WorkflowDetailModal({ workflow, n8nBaseUrl, onClose }: WorkflowD
             {/* Info box */}
             <div className="bg-muted/50 rounded-lg border p-4">
               <p className="text-sm">
-                This is a custom workflow not published to the CAAL Tool Registry. You can share it
-                to the registry using the &quot;Share to Registry&quot; button.
+                This is a custom workflow not published to the CAAL Tool Registry. Share it to help
+                others discover and use your workflow.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="section-divider shrink-0 overflow-visible px-6 py-4">
+          <button
+            onClick={() => onShare(workflow)}
+            className="btn-glow bg-primary-bg text-primary-foreground flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium"
+          >
+            Share to Registry
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>,

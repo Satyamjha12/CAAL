@@ -340,6 +340,10 @@ export function InstalledToolsView({
           workflow={selectedWorkflow}
           n8nBaseUrl={n8nBaseUrl}
           onClose={() => setSelectedWorkflow(null)}
+          onShare={(workflow) => {
+            setSelectedWorkflow(null);
+            handleShare(workflow);
+          }}
         />
       )}
 
