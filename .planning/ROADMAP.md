@@ -42,11 +42,11 @@ Plans:
   2. User can change language via dropdown in settings panel
   3. Settings panel shows all labels, buttons, and descriptions in selected language
   4. Page loads remain fast (static rendering preserved via setRequestLocale)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: next-intl infrastructure setup
-- [ ] 02-02: EN/FR message files and UI localization
+- [ ] 02-01-PLAN.md - next-intl infrastructure setup (install, config, provider)
+- [ ] 02-02-PLAN.md - EN/FR message files and UI localization
 
 ### Phase 3: Mobile i18n
 **Goal**: Users can interact with the mobile app entirely in their configured language
@@ -89,10 +89,10 @@ Note: Phases 2 and 3 can run in parallel after Phase 1 completes.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete | 2026-01-25 |
-| 2. Frontend i18n | 0/2 | Not started | - |
+| 2. Frontend i18n | 0/2 | Planned | - |
 | 3. Mobile i18n | 0/2 | Not started | - |
 | 4. Voice Pipeline | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25 - Phase 1 complete*
+*Last updated: 2026-01-25 - Phase 2 planned*
