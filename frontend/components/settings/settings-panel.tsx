@@ -1109,7 +1109,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         style={{ borderLeft: '1px solid var(--border-subtle)' }}
       >
         {/* Header */}
-        <header className="section-divider shrink-0">
+        <header
+          className="section-divider shrink-0"
+          style={{
+            background: 'rgb(from var(--surface-0) r g b / 0.5)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <div className="flex items-center justify-between px-6 py-5">
             <h1 className="text-2xl font-bold">Settings</h1>
             <button
@@ -1141,7 +1147,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--surface-1)' }}>
+        <main
+          className="flex-1 overflow-y-auto p-6"
+          style={{
+            background: 'rgb(from var(--surface-0) r g b / 0.5)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <div className="mx-auto max-w-3xl">
             {loading ? (
               <div className="text-muted-foreground py-8 text-center">Loading settings...</div>
@@ -1163,7 +1175,13 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </main>
 
         {/* Footer */}
-        <div className="section-divider shrink-0 p-6">
+        <div
+          className="section-divider shrink-0 p-6"
+          style={{
+            background: 'rgb(from var(--surface-0) r g b / 0.5)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <div className="mx-auto max-w-3xl">
             <Button
               variant="primary"

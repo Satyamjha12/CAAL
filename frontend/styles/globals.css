@@ -45,12 +45,12 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.269 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: #3fb184;
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted-foreground: oklch(0.7107 0.0351 256.79); /* Theme: Midnight - Tailwind slate-400 */
   --accent: oklch(0.371 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
@@ -72,36 +72,34 @@
   --sidebar-ring: oklch(0.439 0 0);
 
   /* ═══════════════════════════════════════════════════
-     SURFACE ELEVATION SYSTEM (n8n-inspired)
-     Creates visual depth through layered surfaces
-     Lighter values = more room for shadow depth
+     SURFACE ELEVATION SYSTEM
+     Theme: Midnight (see frontend/lib/theme.ts)
+     Creates visual depth through layered blue-gray surfaces
      ═══════════════════════════════════════════════════ */
-  --surface-0: oklch(0.20 0 0);   /* Deepest - content area background */
-  --surface-1: oklch(0.24 0 0);   /* Panel/modal background */
-  --surface-2: oklch(0.28 0 0);   /* Cards on panels */
-  --surface-3: oklch(0.32 0 0);   /* Elevated/hover cards */
-  --surface-4: oklch(0.36 0 0);   /* Highest elevation */
+  --surface-deep: oklch(0.15 0.0398 265.75);
+  --surface-0: oklch(0.2077 0.0398 265.75);
+  --surface-1: oklch(0.2795 0.0368 260.03);
+  --surface-2: oklch(0.32 0.035 260);
+  --surface-3: oklch(0.36 0.033 260);
+  --surface-4: oklch(0.4 0.031 260);
 
   /* ═══════════════════════════════════════════════════
      SHADOW SYSTEM (n8n-inspired compound shadows)
      Multiple shadow layers create realistic depth
      ═══════════════════════════════════════════════════ */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4),
-               0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4),
-               0 4px 8px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4),
-               0 8px 16px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5),
-               0 8px 20px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
   --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 
   /* ═══════════════════════════════════════════════════
-     CAAL GREEN - Split for perceptual consistency
-     Darker for fills, lighter for text
+     PRIMARY COLORS
+     Theme: Midnight (see frontend/lib/theme.ts)
+     Vibrant emerald green for all primary elements
      ═══════════════════════════════════════════════════ */
-  --primary-bg: #34735E;    /* Darker green for button/pill backgrounds */
-  --primary-text: #45997c;  /* Original green for text */
+  --primary-bg: #3fb184;
+  --primary-text: #3fb184;
 
   /* ═══════════════════════════════════════════════════
      BORDER VARIATIONS
@@ -154,6 +152,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Surface elevation colors */
+  --color-surface-deep: var(--surface-deep);
   --color-surface-0: var(--surface-0);
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
@@ -224,25 +223,28 @@
      DEPTH UTILITIES - n8n-inspired elevation system
      ═══════════════════════════════════════════════════ */
 
-  /* Card with elevation - lifts off background */
+  /* Card with elevation - glass morphism effect */
   .card-elevated {
-    background: var(--surface-2);
-    border: 1px solid var(--border-subtle);
-    border-top-color: var(--border-top-highlight);
-    box-shadow: var(--shadow-md);
-    transition: all 0.25s ease;
+    background: rgb(from var(--surface-2) r g b / 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-color: rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
   }
 
   .card-elevated:hover {
-    background: var(--surface-3);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: var(--border-default);
+    background: rgb(from var(--surface-3) r g b / 0.75);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 15px rgba(69, 153, 124, 0.05);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
-  /* Modal/panel styling */
+  /* Modal/panel styling - glass morphism */
   .panel-elevated {
-    background: var(--surface-1);
+    background: rgb(from var(--surface-0) r g b / 0.5);
+    backdrop-filter: blur(8px);
     box-shadow: var(--shadow-xl);
   }
 
@@ -258,15 +260,13 @@
     outline: none;
   }
 
-  /* Primary button with shadow depth */
+  /* Primary button styling */
   .btn-glow {
-    box-shadow: var(--shadow-md);
-    transition: all 0.25s ease;
+    transition: background-color 0.2s ease;
   }
 
   .btn-glow:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-1px);
+    background-color: rgb(from var(--primary-bg) r g b / 0.9);
   }
 
   /* Section divider with subtle depth */
@@ -284,12 +284,23 @@
     padding: 1rem;
   }
 
+  /* Category pill styling */
+  .pill-unselected {
+    background: rgb(from var(--surface-2) r g b / 0.5);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+  }
+
+  .pill-unselected:hover {
+    background: rgb(from var(--surface-3) r g b / 0.6);
+  }
+
   /* Hide scrollbar but keep scroll functionality */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari, Opera */
+    display: none; /* Chrome, Safari, Opera */
   }
 }

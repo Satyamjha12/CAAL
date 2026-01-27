@@ -34,7 +34,7 @@ export const WelcomeView = ({
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative min-h-screen" style={{ background: 'var(--surface-deep)' }}>
       {/* Top right buttons */}
       <div className="fixed top-6 right-6 z-40 flex items-center gap-2">
         {onOpenTools && (
@@ -57,7 +57,7 @@ export const WelcomeView = ({
         )}
       </div>
 
-      <section className="bg-background flex flex-col items-center justify-center text-center">
+      <section className="flex min-h-screen flex-col items-center justify-center text-center">
         <WelcomeImage />
 
         <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">

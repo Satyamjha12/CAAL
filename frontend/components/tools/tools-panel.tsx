@@ -116,7 +116,13 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
         style={{ borderLeft: '1px solid var(--border-subtle)' }}
       >
         {/* Header */}
-        <header className="section-divider shrink-0">
+        <header
+          className="section-divider shrink-0"
+          style={{
+            background: 'rgb(from var(--surface-0) r g b / 0.5)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           <div className="flex items-center justify-between px-6 py-5">
             <div>
               <h1 className="text-2xl font-bold">Tools</h1>
@@ -158,14 +164,18 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
           {currentView === 'browse' && (
             <div className="space-y-3 px-6 py-4">
               {/* Search input */}
-              <div className="relative">
-                <MagnifyingGlass className="text-muted-foreground absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2" />
+              <div className="group relative">
+                <MagnifyingGlass className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-4 z-10 h-5 w-5 -translate-y-1/2 transition-colors" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search tools..."
-                  className="input-recessed w-full rounded-lg py-2.5 pr-4 pl-10 text-sm focus:outline-none"
+                  placeholder="Search for tools, services or categories..."
+                  className="text-foreground placeholder:text-muted-foreground focus:ring-primary w-full border-none py-3 pr-4 pl-12 text-sm transition-all focus:ring-2 focus:outline-none"
+                  style={{
+                    background: 'rgb(from var(--surface-2) r g b / 0.5)',
+                    borderRadius: '0.75rem',
+                  }}
                 />
               </div>
 
@@ -177,14 +187,18 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
           {/* Search (for installed view) */}
           {currentView === 'installed' && (
             <div className="px-6 py-4">
-              <div className="relative">
-                <MagnifyingGlass className="text-muted-foreground absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2" />
+              <div className="group relative">
+                <MagnifyingGlass className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-4 z-10 h-5 w-5 -translate-y-1/2 transition-colors" />
                 <input
                   type="text"
                   value={installedSearchQuery}
                   onChange={(e) => setInstalledSearchQuery(e.target.value)}
                   placeholder="Search installed tools..."
-                  className="input-recessed w-full rounded-lg py-2.5 pr-4 pl-10 text-sm focus:outline-none"
+                  className="text-foreground placeholder:text-muted-foreground focus:ring-primary w-full border-none py-3 pr-4 pl-12 text-sm transition-all focus:ring-2 focus:outline-none"
+                  style={{
+                    background: 'rgb(from var(--surface-2) r g b / 0.5)',
+                    borderRadius: '0.75rem',
+                  }}
                 />
               </div>
             </div>
@@ -192,7 +206,13 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--surface-1)' }}>
+        <main
+          className="flex-1 overflow-y-auto p-6"
+          style={{
+            background: 'rgb(from var(--surface-0) r g b / 0.5)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           {/* n8n not enabled warning (only for browse view when trying to install) */}
           {currentView === 'browse' && !checkingN8n && n8nEnabled === false && (
             <div className="mb-6 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">

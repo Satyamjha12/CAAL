@@ -81,10 +81,7 @@ export function ToolDetailModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div
-        className="panel-elevated relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl"
-        style={{ border: '1px solid var(--border-subtle)' }}
-      >
+      <div className="bg-background relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border shadow-2xl">
         {/* Header */}
         <div className="section-divider shrink-0 border-b-0 px-6 py-4">
           <div className="flex items-start justify-between">
