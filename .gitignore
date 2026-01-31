@@ -42,8 +42,6 @@ TODO.md
 .env
 .env.local
 .env.*.local
-n8n-workflows/config.env
-
 # Runtime settings (user-specific)
 settings.json
 prompt/custom.md
