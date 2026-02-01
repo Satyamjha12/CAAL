@@ -393,7 +393,8 @@ async def get_settings() -> SettingsResponse:
         Sensitive keys (tokens) are excluded for security.
     """
     settings = settings_module.load_settings_safe()  # Excludes sensitive keys
-    prompt_content = settings_module.load_prompt_content()
+    language = settings.get("language", "en")
+    prompt_content = settings_module.load_prompt_content(language=language)
     custom_exists = settings_module.custom_prompt_exists()
 
     return SettingsResponse(
@@ -437,7 +438,8 @@ async def update_settings(req: SettingsUpdateRequest) -> SettingsResponse:
 
     # Reload and return
     settings = settings_module.reload_settings()
-    prompt_content = settings_module.load_prompt_content()
+    language = settings.get("language", "en")
+    prompt_content = settings_module.load_prompt_content(language=language)
     custom_exists = settings_module.custom_prompt_exists()
 
     logger.info(f"Settings updated: {list(req.settings.keys())}")
@@ -457,7 +459,8 @@ async def get_prompt() -> PromptResponse:
         PromptResponse with prompt name and content
     """
     prompt_name = settings_module.get_setting("prompt", "default")
-    content = settings_module.load_prompt_content(prompt_name)
+    language = settings_module.get_setting("language", "en")
+    content = settings_module.load_prompt_content(prompt_name, language=language)
     is_custom = prompt_name == "custom" and settings_module.custom_prompt_exists()
 
     return PromptResponse(

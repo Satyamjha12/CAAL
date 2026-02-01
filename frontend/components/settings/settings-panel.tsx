@@ -119,6 +119,19 @@ const LANGUAGES = [
   { code: 'fr', label: 'Français' },
 ] as const;
 
+// Mirror of voice_agent.py DEFAULT_WAKE_GREETINGS — shown as placeholder
+// when the user hasn't customized greetings (empty array in settings)
+const DEFAULT_WAKE_GREETINGS: Record<string, string[]> = {
+  en: ["Hey, what's up?", 'Hi there!', 'Yeah?', 'What can I do for you?', 'Hey!', "What's up?"],
+  fr: [
+    'Salut, quoi de neuf ?',
+    'Bonjour !',
+    'Oui ?',
+    "Qu'est-ce que je peux faire pour toi ?",
+    'Salut !',
+  ],
+};
+
 // =============================================================================
 // Component
 // =============================================================================
@@ -736,6 +749,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <textarea
                 value={settings.wake_greetings.join('\n')}
                 onChange={(e) => handleWakeGreetingsChange(e.target.value)}
+                placeholder={(
+                  DEFAULT_WAKE_GREETINGS[settings.language] || DEFAULT_WAKE_GREETINGS.en
+                ).join('\n')}
                 rows={4}
                 className="textarea-field text-foreground w-full px-4 py-3 text-sm"
               />
