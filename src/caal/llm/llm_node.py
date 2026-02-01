@@ -117,10 +117,19 @@ async def llm_node(
             try:
                 response = await provider.chat(messages=messages, tools=tools)
             except Exception as tool_err:
-                # Tool call generation failed (e.g., Groq/Llama malformed function syntax)
+                # Tool call generation failed (e.g., model garbled tool name)
                 # Retry once, then fall back to streaming without tools
                 err_msg = str(tool_err)
-                if "tool_use_failed" in err_msg or "Failed to call a function" in err_msg:
+                is_malformed_tool = (
+                    "tool_use_failed" in err_msg
+                    or "Failed to call a function" in err_msg
+                    # Ollama: model leaked think/control tokens into tool name
+                    # e.g. "tool '{}[/THINK][TOOL_CALLS]notion_tasks' not found"
+                    or "[/THINK]" in err_msg
+                    or "[TOOL_CALLS]" in err_msg
+                    or "<function=" in err_msg
+                )
+                if is_malformed_tool:
                     logger.warning(
                         f"LLM generated malformed tool call, retrying: {err_msg}"
                     )
