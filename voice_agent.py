@@ -100,14 +100,9 @@ OLLAMA_THINK = os.getenv("OLLAMA_THINK", "false").lower() == "true"
 TIMEZONE_ID = os.getenv("TIMEZONE", "America/Los_Angeles")
 TIMEZONE_DISPLAY = os.getenv("TIMEZONE_DISPLAY", "Pacific Time")
 
-# Per-language voice and greeting mappings
-PIPER_VOICE_MAP = {
-    "en": "speaches-ai/piper-en_US-ryan-high",
-    "fr": "speaches-ai/piper-fr_FR-siwis-medium",
-}
-
 # Import settings module for runtime-configurable values
 from caal import settings as settings_module  # noqa: E402
+from caal.settings import PIPER_VOICE_MAP  # noqa: E402
 
 
 def get_wake_greetings(language: str) -> list[str]:

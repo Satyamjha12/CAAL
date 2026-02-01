@@ -76,6 +76,13 @@ DEFAULT_SETTINGS = {
     "min_endpointing_delay": 0.5,  # Seconds to wait before considering turn complete
 }
 
+# Per-language Piper TTS voice mapping
+# When adding a new language, add its Piper voice here.
+PIPER_VOICE_MAP: dict[str, str] = {
+    "en": "speaches-ai/piper-en_US-ryan-high",
+    "fr": "speaches-ai/piper-fr_FR-siwis-medium",
+}
+
 # Keys that should never be returned via API (security)
 SENSITIVE_KEYS: set[str] = set()  # All keys returned - shown as dots in password fields
 
