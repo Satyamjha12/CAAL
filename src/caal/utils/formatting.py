@@ -59,7 +59,10 @@ def number_to_ordinal_word(n: int) -> str:
     if n < 100:
         tens = n // 10
         ones = n % 10
-        tens_words = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+        tens_words = [
+            '', '', 'twenty', 'thirty', 'forty', 'fifty',
+            'sixty', 'seventy', 'eighty', 'ninety',
+        ]
         if ones == 0:
             return f"{tens_words[tens]}th"
         else:

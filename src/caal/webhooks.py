@@ -46,7 +46,8 @@ from livekit.protocol.models import DataPacket
 from livekit.protocol.room import SendDataRequest
 from pydantic import BaseModel
 
-from . import registry_cache, settings as settings_module
+from . import registry_cache
+from . import settings as settings_module
 
 logger = logging.getLogger(__name__)
 
@@ -1130,8 +1131,8 @@ class N8nWorkflowItem(BaseModel):
     name: str
     active: bool
     tags: list[str]
-    createdAt: str
-    updatedAt: str
+    createdAt: str  # noqa: N815 (matches n8n API JSON field)
+    updatedAt: str  # noqa: N815 (matches n8n API JSON field)
     caal_registry_id: str | None = None
     caal_registry_version: str | None = None
 

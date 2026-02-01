@@ -42,19 +42,20 @@ from dotenv import load_dotenv
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_script_dir, ".env"))
 
-from livekit import agents
-from livekit.agents import AgentSession, Agent, mcp, function_tool
-from livekit.plugins import silero, openai, groq as groq_plugin
+from livekit import agents, rtc  # noqa: E402
+from livekit.agents import Agent, AgentSession, mcp  # noqa: E402
+from livekit.plugins import groq as groq_plugin  # noqa: E402
+from livekit.plugins import openai, silero  # noqa: E402
 
-from caal import CAALLLM
-from caal.integrations import (
-    load_mcp_config,
-    initialize_mcp_servers,
+from caal import CAALLLM  # noqa: E402
+from caal.integrations import (  # noqa: E402
     WebSearchTools,
     discover_n8n_workflows,
+    initialize_mcp_servers,
+    load_mcp_config,
 )
-from caal.llm import llm_node, ToolDataCache
-from caal.stt import WakeWordGatedSTT
+from caal.llm import ToolDataCache, llm_node  # noqa: E402
+from caal.stt import WakeWordGatedSTT  # noqa: E402
 
 # Configure logging - LiveKit adds LogQueueHandler to root in worker processes,
 # so we use non-propagating loggers with our own handler to avoid duplicates
@@ -93,7 +94,8 @@ logging.getLogger("livekit.plugins.openai.tts").setLevel(logging.WARNING)
 SPEACHES_URL = os.getenv("SPEACHES_URL", "http://speaches:8000")
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "Systran/faster-whisper-small")
 KOKORO_URL = os.getenv("KOKORO_URL", "http://kokoro:8880")
-TTS_MODEL = os.getenv("TTS_MODEL", "kokoro")  # "kokoro" for Kokoro-FastAPI, "prince-canuma/Kokoro-82M" for mlx-audio
+# "kokoro" for Kokoro-FastAPI, "prince-canuma/Kokoro-82M" for mlx-audio
+TTS_MODEL = os.getenv("TTS_MODEL", "kokoro")
 OLLAMA_THINK = os.getenv("OLLAMA_THINK", "false").lower() == "true"
 TIMEZONE_ID = os.getenv("TIMEZONE", "America/Los_Angeles")
 TIMEZONE_DISPLAY = os.getenv("TIMEZONE_DISPLAY", "Pacific Time")
@@ -126,7 +128,7 @@ DEFAULT_WAKE_GREETINGS = {
 }
 
 # Import settings module for runtime-configurable values
-from caal import settings as settings_module
+from caal import settings as settings_module  # noqa: E402
 
 
 def get_wake_greetings(language: str) -> list[str]:
@@ -166,13 +168,22 @@ def get_runtime_settings() -> dict:
         "llm_provider": user_settings.get("llm_provider") or os.getenv("LLM_PROVIDER", "ollama"),
         "temperature": settings.get("temperature", float(os.getenv("OLLAMA_TEMPERATURE", "0.7"))),
         # Ollama settings
-        "ollama_host": user_settings.get("ollama_host") or os.getenv("OLLAMA_HOST", "http://localhost:11434"),
-        "ollama_model": user_settings.get("ollama_model") or os.getenv("OLLAMA_MODEL", "ministral-3:8b"),
+        "ollama_host": (
+            user_settings.get("ollama_host")
+            or os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        ),
+        "ollama_model": (
+            user_settings.get("ollama_model")
+            or os.getenv("OLLAMA_MODEL", "ministral-3:8b")
+        ),
         "num_ctx": settings.get("num_ctx", int(os.getenv("OLLAMA_NUM_CTX", "8192"))),
         "think": OLLAMA_THINK,  # Only applies to Ollama
         # Groq settings
         "groq_api_key": settings.get("groq_api_key") or os.getenv("GROQ_API_KEY", ""),
-        "groq_model": user_settings.get("groq_model") or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        "groq_model": (
+            user_settings.get("groq_model")
+            or os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        ),
         # Shared settings
         "max_turns": settings.get("max_turns", int(os.getenv("OLLAMA_MAX_TURNS", "20"))),
         "tool_cache_size": settings.get("tool_cache_size", int(os.getenv("TOOL_CACHE_SIZE", "3"))),
@@ -217,7 +228,11 @@ def create_hass_tools(hass_server: mcp.MCPServerHTTP) -> tuple[list[dict], dict]
     """
     async def hass_control(action: str, target: str, value: int = None) -> str:
         """Control Home Assistant devices.
-        Parameters: action (required: turn_on, turn_off, volume_up, volume_down, set_volume, mute, unmute, pause, play, next, previous), target (required: device name), value (optional: for set_volume 0-100).
+
+        Parameters: action (required: turn_on, turn_off, volume_up,
+        volume_down, set_volume, mute, unmute, pause, play, next,
+        previous), target (required: device name),
+        value (optional: for set_volume 0-100).
         """
         if not hass_server or not hasattr(hass_server, "_client"):
             return "Home Assistant is not connected"
@@ -307,7 +322,14 @@ def create_hass_tools(hass_server: mcp.MCPServerHTTP) -> tuple[list[dict], dict]
             "type": "function",
             "function": {
                 "name": "hass_control",
-                "description": "Control Home Assistant devices. Parameters: action (required: turn_on, turn_off, volume_up, volume_down, set_volume, mute, unmute, pause, play, next, previous), target (required: device name), value (optional: for set_volume 0-100).",
+                "description": (
+                    "Control Home Assistant devices. "
+                    "Parameters: action (required: turn_on, turn_off, "
+                    "volume_up, volume_down, set_volume, mute, unmute, "
+                    "pause, play, next, previous), "
+                    "target (required: device name), "
+                    "value (optional: for set_volume 0-100)."
+                ),
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -323,7 +345,11 @@ def create_hass_tools(hass_server: mcp.MCPServerHTTP) -> tuple[list[dict], dict]
             "type": "function",
             "function": {
                 "name": "hass_get_state",
-                "description": "Get the current state of Home Assistant devices. Parameters: target (optional: device name to filter, or omit for all devices).",
+                "description": (
+                    "Get the current state of Home Assistant devices. "
+                    "Parameters: target (optional: device name to "
+                    "filter, or omit for all devices)."
+                ),
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -429,9 +455,15 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         for err in mcp_errors:
             # Friendly names for known servers
             if err.name == "n8n":
-                error_messages.append("n8n enabled but could not connect - check URL and token in Settings")
+                error_messages.append(
+                    "n8n enabled but could not connect"
+                    " - check URL and token in Settings"
+                )
             elif err.name == "home_assistant":
-                error_messages.append("Home Assistant enabled but could not connect - check URL and token in Settings")
+                error_messages.append(
+                    "Home Assistant enabled but could not connect"
+                    " - check URL and token in Settings"
+                )
             else:
                 error_messages.append(f"MCP server '{err.name}' failed to connect: {err.error}")
 
@@ -499,7 +531,8 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         logger.info(f"  TTS: Kokoro ({runtime['tts_voice_kokoro']})")
     if runtime["llm_provider"] == "ollama":
         logger.info(
-            f"  LLM: Ollama ({runtime['ollama_model']}, think={runtime['think']}, num_ctx={runtime['num_ctx']})"
+            f"  LLM: Ollama ({runtime['ollama_model']}, "
+            f"think={runtime['think']}, num_ctx={runtime['num_ctx']})"
         )
     else:
         logger.info(
@@ -593,7 +626,10 @@ async def entrypoint(ctx: agents.JobContext) -> None:
             on_wake_detected=on_wake_detected,
             on_state_changed=on_state_changed,
         )
-        logger.info(f"  Wake word: ENABLED (model={wake_word_model}, threshold={wake_word_threshold})")
+        logger.info(
+            f"  Wake word: ENABLED (model={wake_word_model}, "
+            f"threshold={wake_word_threshold})"
+        )
     else:
         stt_instance = base_stt
         logger.info("  Wake word: disabled")
@@ -899,6 +935,7 @@ def run_webhook_server_sync():
     any user connects.
     """
     import uvicorn
+
     from caal.webhooks import app
 
     config = uvicorn.Config(
