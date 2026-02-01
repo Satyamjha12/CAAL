@@ -51,13 +51,33 @@ const INITIAL_DATA: SetupData = {
 
 const TOTAL_STEPS = 3;
 
+// Per-language Piper voice mapping (mirrors PIPER_VOICE_MAP in settings.py)
+const PIPER_MODELS: Record<string, string> = {
+  fr: 'speaches-ai/piper-fr_FR-siwis-medium',
+  it: 'speaches-ai/piper-it_IT-paola-medium',
+};
+
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const t = useTranslations('Setup');
   const tCommon = useTranslations('Common');
   const tStatus = useTranslations('Settings.status');
 
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<SetupData>(INITIAL_DATA);
+  const [data, setData] = useState<SetupData>(() => {
+    // Read language from cookie to pre-select appropriate TTS provider/voice
+    const locale =
+      typeof document !== 'undefined'
+        ? document.cookie.match(/CAAL_LOCALE=(\w+)/)?.[1] || 'en'
+        : 'en';
+
+    if (locale === 'en') return INITIAL_DATA;
+
+    return {
+      ...INITIAL_DATA,
+      tts_provider: 'piper' as const,
+      tts_voice_piper: PIPER_MODELS[locale] || INITIAL_DATA.tts_voice_piper,
+    };
+  });
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
