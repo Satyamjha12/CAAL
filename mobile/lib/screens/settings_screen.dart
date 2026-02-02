@@ -746,11 +746,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                   onChanged: (value) async {
                     if (value != null) {
+                      // Update app locale immediately for UI
                       final localeProvider = context.read<LocaleProvider>();
                       await localeProvider.setLocale(
                         Locale(value),
                         widget.configService.serverUrl,
                       );
+
+                      // Switch TTS to Piper for non-English languages
+                      if (value != 'en' && _serverConnected) {
+                        const piperModels = {
+                          'en': 'speaches-ai/piper-en_US-ryan-high',
+                          'fr': 'speaches-ai/piper-fr_FR-siwis-medium',
+                          'it': 'speaches-ai/piper-it_IT-paola-medium',
+                        };
+                        final modelId =
+                            piperModels[value] ?? piperModels['en']!;
+                        try {
+                          await http.post(
+                            Uri.parse('$_webhookUrl/settings'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode({
+                              'settings': {
+                                'tts_provider': 'piper',
+                                'tts_voice_piper': modelId,
+                              }
+                            }),
+                          );
+                          // Download the Piper model so it appears in voice list
+                          http.post(
+                            Uri.parse('$_webhookUrl/download-piper-model'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode({'model_id': modelId}),
+                          );
+                        } catch (e) {
+                          // Best-effort
+                        }
+                      }
+
+                      // Reload settings to pick up updated greetings + TTS
+                      if (_serverConnected) {
+                        await _loadSettings();
+                      }
                     }
                   },
                 ),
@@ -899,7 +936,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildDropdown(
                     label: l10n.voice,
                     value: _currentVoice,
-                    options: _voices.isNotEmpty ? _voices : [_currentVoice],
+                    options: _voices.isNotEmpty
+                        ? (_voices.contains(_currentVoice) ? _voices : [_currentVoice, ..._voices])
+                        : [_currentVoice],
                     onChanged: (v) => _setCurrentVoice(v ?? _currentVoice),
                   ),
                 ]),

@@ -246,6 +246,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageFrench => 'Francais';
 
   @override
+  String get languageItalian => 'Italiano';
+
+  @override
   String get changesNote => 'Note: Model, context size, and wake word changes take effect on next session.';
 
   @override

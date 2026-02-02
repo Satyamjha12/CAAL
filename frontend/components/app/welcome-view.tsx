@@ -23,14 +23,12 @@ function WelcomeImage() {
 }
 
 interface WelcomeViewProps {
-  startButtonText: string;
   onStartCall: () => void;
   onOpenSettings?: () => void;
   onOpenTools?: () => void;
 }
 
 export const WelcomeView = ({
-  startButtonText,
   onStartCall,
   onOpenSettings,
   onOpenTools,
@@ -69,7 +67,7 @@ export const WelcomeView = ({
         <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">{t('subtitle')}</p>
 
         <Button variant="primary" size="lg" onClick={onStartCall} className="mt-6 w-64 font-mono">
-          {startButtonText}
+          {t('start')}
         </Button>
       </section>
     </div>
