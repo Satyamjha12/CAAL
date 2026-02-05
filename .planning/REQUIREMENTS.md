@@ -1,0 +1,72 @@
+# Requirements: CAAL i18n v1.1
+
+**Defined:** 2026-02-05
+**Core Value:** All UI text is internationalized — no hardcoded English strings
+
+## v1.1 Requirements
+
+Requirements for Tool Registry i18n completion.
+
+### Internationalization Infrastructure
+
+- [ ] **I18N-01**: workflow-submission-dialog.tsx uses useTranslations hook
+- [ ] **I18N-02**: workflow-detail-modal.tsx uses useTranslations hook
+- [ ] **I18N-03**: All hardcoded strings extracted to message keys
+
+### English Message Keys
+
+- [ ] **EN-01**: Tools.share.* keys added to en.json for submission dialog
+- [ ] **EN-02**: Tools.workflow.* keys added to en.json for detail modal
+
+### French Translations
+
+- [ ] **FR-01**: Tools.share.* keys translated in fr.json
+- [ ] **FR-02**: Tools.workflow.* keys translated in fr.json
+- [ ] **FR-03**: French translations use tu/toi register consistently
+
+### Italian Translations
+
+- [ ] **IT-01**: Tools.share.* keys translated in it.json
+- [ ] **IT-02**: Tools.workflow.* keys translated in it.json
+
+### Quality Assurance
+
+- [ ] **QA-01**: No hardcoded English strings remain in target components
+- [ ] **QA-02**: Translation style consistent with existing messages
+- [ ] **QA-03**: All three languages (EN/FR/IT) have identical key structure
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| New languages | Infrastructure supports it, content deferred |
+| Mobile changes | No new strings added to mobile |
+| Backend i18n | Tool Registry is frontend-only |
+| tool-install-modal.tsx | Already uses translations |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| I18N-01 | Phase 5 | Pending |
+| I18N-02 | Phase 5 | Pending |
+| I18N-03 | Phase 5 | Pending |
+| EN-01 | Phase 5 | Pending |
+| EN-02 | Phase 5 | Pending |
+| FR-01 | Phase 6 | Pending |
+| FR-02 | Phase 6 | Pending |
+| FR-03 | Phase 6 | Pending |
+| IT-01 | Phase 6 | Pending |
+| IT-02 | Phase 6 | Pending |
+| QA-01 | Phase 7 | Pending |
+| QA-02 | Phase 7 | Pending |
+| QA-03 | Phase 7 | Pending |
+
+**Coverage:**
+- v1.1 requirements: 13 total
+- Mapped to phases: 13
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-02-05*
+*Last updated: 2026-02-05 after initial definition*
