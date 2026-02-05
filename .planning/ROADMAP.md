@@ -36,10 +36,12 @@ Tool Registry with full i18n support for French and Italian translations.
   3. Both providers stream responses correctly in voice conversations
   4. Both providers execute tool calls (Home Assistant, n8n workflows) successfully
   5. Provider factory creates OpenAI-compatible and OpenRouter instances from settings
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: [TBD]
+- [ ] 08-01-PLAN.md — OpenAI-compatible provider implementation
+- [ ] 08-02-PLAN.md — OpenRouter provider implementation
+- [ ] 08-03-PLAN.md — Factory integration for both providers
 
 #### Phase 9: Settings Schema Extension
 **Goal**: Settings system supports both new providers with proper configuration keys
@@ -112,7 +114,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 8. Backend Provider Foundation | v1.2 | 0/TBD | Not started | - |
+| 8. Backend Provider Foundation | v1.2 | 0/3 | Not started | - |
 | 9. Settings Schema Extension | v1.2 | 0/TBD | Not started | - |
 | 10. Connection Testing Endpoints | v1.2 | 0/TBD | Not started | - |
 | 11. Setup Wizard Frontend | v1.2 | 0/TBD | Not started | - |
