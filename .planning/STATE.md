@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2025-02-05)
 ## Current Position
 
 Phase: 8 of 12 (Backend Provider Foundation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-05 — Completed 08-01-PLAN.md (OpenAI-Compatible Provider)
+Last activity: 2026-02-05 — Completed 08-02-PLAN.md (OpenRouter Provider)
 
-Progress: [█░░░░░░░░░] 8%
+Progress: [██░░░░░░░░] 16%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2 min
-- Total execution time: 2 min
+- Total plans completed: 2
+- Average duration: 5 min
+- Total execution time: 10 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 08-backend-provider-foundation | 1 | 2 min | 2 min |
+| 08-backend-provider-foundation | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-01 (2 min)
-- Trend: N/A (first plan)
+- Last 5 plans: 08-01 (2 min), 08-02 (8 min)
+- Trend: N/A (early phase)
 
 *Updated after each plan completion*
 
@@ -47,6 +47,9 @@ Recent decisions affecting current work:
 - Full stack scope: backend + settings panel + setup wizard
 - Use existing provider abstraction pattern in src/caal/llm/providers/
 - Use "not-needed" placeholder API key for unauthenticated servers (08-01)
+- Required API key validation on init for OpenRouter (no env fallback) (08-02)
+- Fixed OPENROUTER_BASE_URL constant for consistency (08-02)
+- Attribution headers for OpenRouter model provider compliance (08-02)
 
 ### Pending Todos
 
@@ -59,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-05
-Stopped at: Completed 08-01-PLAN.md
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
