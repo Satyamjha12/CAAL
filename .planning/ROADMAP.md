@@ -85,10 +85,10 @@ Plans:
   4. OpenRouter form includes API key and model selection with search support
   5. Setup wizard tests connection before allowing user to proceed to next step
   6. Failed connection tests show clear error messages with troubleshooting guidance
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 11-01: [TBD]
+- [ ] 11-01-PLAN.md — Extend SetupData, add provider grid and forms, add i18n translations
 
 #### Phase 12: Settings Panel UI
 **Goal**: Users can switch providers and reconfigure settings after initial setup
@@ -117,5 +117,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12
 | 8. Backend Provider Foundation | v1.2 | 3/3 | Complete | 2026-02-05 |
 | 9. Settings Schema Extension | v1.2 | 1/1 | Complete | 2026-02-06 |
 | 10. Connection Testing Endpoints | v1.2 | 1/1 | ✓ Complete | 2026-02-06 |
-| 11. Setup Wizard Frontend | v1.2 | 0/TBD | Not started | - |
+| 11. Setup Wizard Frontend | v1.2 | 0/1 | Planned | - |
 | 12. Settings Panel UI | v1.2 | 0/TBD | Not started | - |
