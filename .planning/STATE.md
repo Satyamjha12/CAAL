@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2025-02-05)
 ## Current Position
 
 Phase: 11 of 12 (Setup Wizard Frontend)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-06 — Phase 10 complete, verified
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-06 — Completed 11-01-PLAN.md
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 4 min
-- Total execution time: 18 min
+- Total execution time: 22 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [██████░░░░] 60%
 | 08-backend-provider-foundation | 3 | 13 min | 4 min |
 | 09-settings-schema-extension | 1 | 3 min | 3 min |
 | 10-connection-testing-endpoints | 1 | 2 min | 2 min |
+| 11-setup-wizard-frontend | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-01 (2 min), 08-02 (8 min), 08-03 (3 min), 09-01 (3 min), 10-01 (2 min)
+- Last 5 plans: 08-02 (8 min), 08-03 (3 min), 09-01 (3 min), 10-01 (2 min), 11-01 (4 min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -57,6 +58,9 @@ Recent decisions affecting current work:
 - Empty string defaults for new provider settings (09-01)
 - Handle both {"data": [...]} and {"models": [...]} response formats for OpenAI-compatible (10-01)
 - Use supported_parameters=tools for OpenRouter to filter tool-capable models (10-01)
+- OpenAI-compatible API key optional in setup wizard (for local servers) (11-01)
+- OpenRouter follows Groq pattern (API key required with link to get key) (11-01)
+- 2x2 provider grid layout in setup wizard (11-01)
 
 ### Pending Todos
 
@@ -69,5 +73,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-06
-Stopped at: Completed 10-01-PLAN.md
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None
