@@ -4,7 +4,7 @@
 
 - **v1.0 MVP** - Core voice assistant (shipped 2025)
 - **v1.1 Tool Registry i18n** - Phases 6-7 (shipped 2025-02)
-- **v1.2 Additional LLM Providers** - Phases 8-12 (in progress)
+- **v1.2 Additional LLM Providers** - Phases 8-12 (shipped 2026-02)
 
 ## Phases
 
@@ -22,7 +22,8 @@ Tool Registry with full i18n support for French and Italian translations.
 
 </details>
 
-### v1.2 Additional LLM Providers (In Progress)
+<details>
+<summary>v1.2 Additional LLM Providers - SHIPPED 2026-02</summary>
 
 **Milestone Goal:** Add OpenAI-compatible and OpenRouter LLM providers with full UI integration
 
@@ -90,23 +91,25 @@ Plans:
 Plans:
 - [x] 11-01-PLAN.md — Extend SetupData, add provider grid and forms, add i18n translations
 
-#### Phase 12: Settings Panel UI
+#### Phase 12: Settings Panel UI - COMPLETE
 **Goal**: Users can switch providers and reconfigure settings after initial setup
 **Depends on**: Phase 11
 **Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, OPENROUTER-03
 **Success Criteria** (what must be TRUE):
-  1. Settings panel Providers tab shows OpenAI-compatible option with full configuration form
-  2. Settings panel Providers tab shows OpenRouter option with full configuration form
-  3. OpenAI-compatible settings include base URL field, API key field, and model selection
-  4. OpenRouter settings include API key field and searchable model dropdown
-  5. Model dropdown for OpenRouter supports search/filter across 400+ models
-  6. Settings panel includes test connection button for both providers
-  7. Settings panel shows restart prompt after provider change
-**Plans**: 2 plans
+  1. ✓ Settings panel Providers tab shows OpenAI-compatible option with full configuration form
+  2. ✓ Settings panel Providers tab shows OpenRouter option with full configuration form
+  3. ✓ OpenAI-compatible settings include base URL field, API key field, and model selection
+  4. ✓ OpenRouter settings include API key field and searchable model dropdown
+  5. ✓ Model dropdown for OpenRouter supports search/filter across 400+ models
+  6. ✓ Settings panel includes test connection button for both providers
+  7. ✓ Settings panel shows restart prompt after provider change
+**Plans**: 2/2 complete
 
 Plans:
-- [ ] 12-01-PLAN.md — Extend Settings interface, test functions, 4-provider toggle
-- [ ] 12-02-PLAN.md — Provider forms with cmdk searchable dropdown, restart prompt, i18n
+- [x] 12-01-PLAN.md — Extend Settings interface, test functions, 4-provider toggle
+- [x] 12-02-PLAN.md — Provider forms with cmdk searchable dropdown, restart prompt, i18n
+
+</details>
 
 ## Progress
 
@@ -119,4 +122,4 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12
 | 9. Settings Schema Extension | v1.2 | 1/1 | Complete | 2026-02-06 |
 | 10. Connection Testing Endpoints | v1.2 | 1/1 | ✓ Complete | 2026-02-06 |
 | 11. Setup Wizard Frontend | v1.2 | 1/1 | ✓ Complete | 2026-02-06 |
-| 12. Settings Panel UI | v1.2 | 0/2 | Ready to execute | - |
+| 12. Settings Panel UI | v1.2 | 2/2 | ✓ Complete | 2026-02-06 |

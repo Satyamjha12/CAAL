@@ -80,7 +80,12 @@
       "optional": "optional",
       "openaiApiKeyNote": "Leave empty if your server doesn't require authentication",
       "openaiCompatibleSttNote": "Using OpenAI-compatible enables local speech-to-text via Speaches.",
-      "openrouterSttNote": "Using OpenRouter enables fast cloud speech-to-text via Groq Whisper."
+      "openrouterSttNote": "Using OpenRouter enables fast cloud speech-to-text via Groq Whisper.",
+      "searchModels": "Search models...",
+      "noModelsFound": "No models found",
+      "restartRequired": "Restart Required",
+      "restartDescription": "The LLM provider has changed. Please restart the agent for changes to take effect.",
+      "restartLater": "I'll restart later"
     },
     "llm": {
       "temperature": "Temperature",

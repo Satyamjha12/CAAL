@@ -80,7 +80,12 @@
       "optional": "optionnel",
       "openaiApiKeyNote": "Laissez vide si votre serveur ne necessite pas d'authentification",
       "openaiCompatibleSttNote": "Utiliser OpenAI-compatible active la reconnaissance vocale locale via Speaches.",
-      "openrouterSttNote": "Utiliser OpenRouter active la reconnaissance vocale cloud rapide via Groq Whisper."
+      "openrouterSttNote": "Utiliser OpenRouter active la reconnaissance vocale cloud rapide via Groq Whisper.",
+      "searchModels": "Rechercher des modeles...",
+      "noModelsFound": "Aucun modele trouve",
+      "restartRequired": "Redemarrage requis",
+      "restartDescription": "Le fournisseur LLM a change. Veuillez redemarrer l'agent pour que les modifications prennent effet.",
+      "restartLater": "Je redemarrerai plus tard"
     },
     "llm": {
       "temperature": "Température",

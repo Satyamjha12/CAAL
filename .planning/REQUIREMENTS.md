@@ -21,18 +21,18 @@ Requirements for milestone v1.2 — Additional LLM Providers.
 
 - [x] **OPENROUTER-01**: User can configure OpenRouter API key
 - [x] **OPENROUTER-02**: System fetches available models from OpenRouter API
-- [ ] **OPENROUTER-03**: User can search/filter models in selection dropdown
+- [x] **OPENROUTER-03**: User can search/filter models in selection dropdown
 - [x] **OPENROUTER-04**: Agent streams responses from OpenRouter
 - [x] **OPENROUTER-05**: Agent executes tool calls with OpenRouter
 - [x] **OPENROUTER-06**: User can test connection before saving settings
 
 ### Frontend - Settings Panel
 
-- [ ] **UI-01**: Settings panel shows OpenAI-compatible provider option
-- [ ] **UI-02**: Settings panel shows OpenRouter provider option
-- [ ] **UI-03**: OpenAI-compatible settings include base URL, API key, model fields
-- [ ] **UI-04**: OpenRouter settings include API key and model selection
-- [ ] **UI-05**: Model dropdown supports search for OpenRouter (400+ models)
+- [x] **UI-01**: Settings panel shows OpenAI-compatible provider option
+- [x] **UI-02**: Settings panel shows OpenRouter provider option
+- [x] **UI-03**: OpenAI-compatible settings include base URL, API key, model fields
+- [x] **UI-04**: OpenRouter settings include API key and model selection
+- [x] **UI-05**: Model dropdown supports search for OpenRouter (400+ models)
 
 ### Frontend - Setup Wizard
 
@@ -76,15 +76,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPENAI-07 | Phase 10 | Complete |
 | OPENROUTER-01 | Phase 8 | Complete |
 | OPENROUTER-02 | Phase 10 | Complete |
-| OPENROUTER-03 | Phase 12 | Pending |
+| OPENROUTER-03 | Phase 12 | Complete |
 | OPENROUTER-04 | Phase 8 | Complete |
 | OPENROUTER-05 | Phase 8 | Complete |
 | OPENROUTER-06 | Phase 10 | Complete |
-| UI-01 | Phase 12 | Pending |
-| UI-02 | Phase 12 | Pending |
-| UI-03 | Phase 12 | Pending |
-| UI-04 | Phase 12 | Pending |
-| UI-05 | Phase 12 | Pending |
+| UI-01 | Phase 12 | Complete |
+| UI-02 | Phase 12 | Complete |
+| UI-03 | Phase 12 | Complete |
+| UI-04 | Phase 12 | Complete |
+| UI-05 | Phase 12 | Complete |
 | WIZARD-01 | Phase 11 | Complete |
 | WIZARD-02 | Phase 11 | Complete |
 | WIZARD-03 | Phase 11 | Complete |
@@ -103,4 +103,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-02-05*
-*Last updated: 2026-02-06 after Phase 11 completion*
+*Last updated: 2026-02-06 after Phase 12 completion — v1.2 milestone complete*
