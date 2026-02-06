@@ -362,8 +362,9 @@ def _build_messages_from_context(
         if context:
             messages.append({"role": "system", "content": context})
 
-    # 3. Inject short-term memory context
-    if short_term_memory:
+    # 3. Inject short-term memory context (only after user has spoken)
+    has_user_message = any(m["role"] == "user" for m in chat_messages)
+    if short_term_memory and has_user_message:
         memory_context = short_term_memory.get_context_message()
         if memory_context:
             messages.append({"role": "system", "content": memory_context})
