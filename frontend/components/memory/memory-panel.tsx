@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
-import { Brain, Clock, Trash, X } from '@phosphor-icons/react/dist/ssr';
+import { Brain, Clock, FloppyDisk, PencilSimple, Trash, X } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/livekit/button';
 
 interface MemoryEntry {
@@ -82,6 +82,8 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState<MemoryEntry | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
 
   const fetchMemory = useCallback(async () => {
     setLoading(true);
@@ -128,6 +130,27 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
       }
     } catch (err) {
       console.error('Failed to clear memory:', err);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedEntry) return;
+
+    try {
+      const res = await fetch('/api/memory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: selectedEntry.key, value: editValue }),
+      });
+      if (res.ok) {
+        setEntries(
+          entries.map((e) => (e.key === selectedEntry.key ? { ...e, value: editValue } : e))
+        );
+        setSelectedEntry({ ...selectedEntry, value: editValue });
+        setEditing(false);
+      }
+    } catch (err) {
+      console.error('Failed to save memory entry:', err);
     }
   };
 
@@ -187,7 +210,10 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
                   key={entry.key}
                   className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors"
                   style={{ borderColor: 'var(--border-subtle)' }}
-                  onClick={() => setSelectedEntry(entry)}
+                  onClick={() => {
+                    setSelectedEntry(entry);
+                    setEditing(false);
+                  }}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -261,14 +287,52 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
             </div>
 
             <div className="mb-4">
-              <label className="text-muted-foreground mb-1 block text-xs uppercase">
-                {t('detail.value')}
-              </label>
-              <pre className="bg-muted overflow-auto rounded-lg p-3 text-sm">
-                {typeof selectedEntry.value === 'string'
-                  ? selectedEntry.value
-                  : JSON.stringify(selectedEntry.value, null, 2)}
-              </pre>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-muted-foreground block text-xs uppercase">
+                  {t('detail.value')}
+                </label>
+                {!editing && (
+                  <button
+                    onClick={() => {
+                      setEditing(true);
+                      setEditValue(
+                        typeof selectedEntry.value === 'string'
+                          ? selectedEntry.value
+                          : JSON.stringify(selectedEntry.value, null, 2)
+                      );
+                    }}
+                    className="text-muted-foreground hover:text-foreground p-1 transition-colors"
+                  >
+                    <PencilSimple className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              {editing ? (
+                <div>
+                  <textarea
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-muted w-full rounded-lg border p-3 font-mono text-sm"
+                    style={{ borderColor: 'var(--border-subtle)', minHeight: '80px' }}
+                    autoFocus
+                  />
+                  <div className="mt-2 flex justify-end gap-2">
+                    <Button variant="secondary" onClick={() => setEditing(false)}>
+                      {tCommon('cancel')}
+                    </Button>
+                    <Button variant="primary" onClick={handleSaveEdit}>
+                      <FloppyDisk className="mr-2 h-4 w-4" />
+                      {tCommon('save')}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <pre className="bg-muted overflow-auto rounded-lg p-3 text-sm">
+                  {typeof selectedEntry.value === 'string'
+                    ? selectedEntry.value
+                    : JSON.stringify(selectedEntry.value, null, 2)}
+                </pre>
+              )}
             </div>
 
             <div className="text-muted-foreground grid grid-cols-2 gap-4 text-sm">
