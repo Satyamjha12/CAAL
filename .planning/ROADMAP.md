@@ -53,10 +53,10 @@ Plans:
   3. Existing installations migrate to new settings schema without data loss
   4. create_provider_from_settings() factory builds both new provider types
   5. Settings validation rejects invalid configurations (missing base URL, malformed URLs)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 09-01: [TBD]
+- [ ] 09-01-PLAN.md — Add DEFAULT_SETTINGS keys, URL validation, and webhook extensions
 
 #### Phase 10: Connection Testing Endpoints
 **Goal**: Users can validate provider configuration before saving settings
@@ -115,7 +115,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 8. Backend Provider Foundation | v1.2 | 3/3 | ✓ Complete | 2026-02-05 |
-| 9. Settings Schema Extension | v1.2 | 0/TBD | Not started | - |
+| 9. Settings Schema Extension | v1.2 | 0/1 | Not started | - |
 | 10. Connection Testing Endpoints | v1.2 | 0/TBD | Not started | - |
 | 11. Setup Wizard Frontend | v1.2 | 0/TBD | Not started | - |
 | 12. Settings Panel UI | v1.2 | 0/TBD | Not started | - |
