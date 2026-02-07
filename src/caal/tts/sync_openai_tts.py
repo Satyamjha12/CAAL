@@ -7,13 +7,16 @@ synchronous requests wrapped in asyncio.run_in_executor.
 from __future__ import annotations
 
 import asyncio
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import partial
 
 import requests
-from livekit.agents import tts, APIConnectOptions, APIConnectionError, APIStatusError
+from livekit.agents import APIConnectionError, APIConnectOptions, APIStatusError, tts
 from livekit.agents.types import DEFAULT_API_CONNECT_OPTIONS
+
+logger = logging.getLogger(__name__)
 
 SAMPLE_RATE = 24000
 NUM_CHANNELS = 1
@@ -94,7 +97,7 @@ class SyncChunkedStream(tts.ChunkedStream):
             "response_format": opts.response_format,
         }
 
-        print(f"[SyncTTS] Requesting: {url} with model={opts.model}, voice={opts.voice}")
+        logger.debug(f"Requesting: {url} with model={opts.model}, voice={opts.voice}")
 
         response = requests.post(
             url,
@@ -113,16 +116,15 @@ class SyncChunkedStream(tts.ChunkedStream):
             )
 
         # Collect all chunks
-        audio_data = b""
-        for chunk in response.iter_content(chunk_size=8192):
-            audio_data += chunk
+        chunks = list(response.iter_content(chunk_size=8192))
+        audio_data = b"".join(chunks)
 
-        print(f"[SyncTTS] Received {len(audio_data)} bytes of audio")
+        logger.debug(f"Received {len(audio_data)} bytes of audio")
         return audio_data
 
     async def _run(self, output_emitter: tts.AudioEmitter) -> None:
         """Run TTS synthesis using thread executor."""
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         opts = self._tts._opts
         timeout = max(30.0, self._conn_options.timeout)
 
@@ -147,8 +149,8 @@ class SyncChunkedStream(tts.ChunkedStream):
         except requests.exceptions.Timeout:
             raise APIConnectionError("TTS request timed out") from None
         except requests.exceptions.ConnectionError as e:
-            print(f"[SyncTTS] Connection error: {e}")
+            logger.error(f"Connection error: {e}")
             raise APIConnectionError(f"TTS connection failed: {e}") from None
         except Exception as e:
-            print(f"[SyncTTS] Error: {type(e).__name__}: {e}")
+            logger.error(f"{type(e).__name__}: {e}")
             raise APIConnectionError(str(e)) from e

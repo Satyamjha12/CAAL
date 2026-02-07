@@ -94,10 +94,10 @@ logging.getLogger("livekit.plugins.openai.tts").setLevel(logging.WARNING)
 # Infrastructure config (from .env only - URLs, tokens, etc.)
 SPEACHES_URL = os.getenv("SPEACHES_URL", "http://speaches:8000")
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "Systran/faster-whisper-small")
-KOKORO_URL = os.getenv("KOKORO_URL", "http://localhost:8880")
+KOKORO_URL = os.getenv("KOKORO_URL", "http://kokoro:8880")
 PIPER_URL = os.getenv("PIPER_URL", SPEACHES_URL)  # Separate URL for Piper TTS
 TTS_MODEL = os.getenv("TTS_MODEL", "kokoro")
-print(f"[TTS Config] KOKORO_URL={KOKORO_URL}, PIPER_URL={PIPER_URL}, TTS_MODEL={TTS_MODEL}")
+logger.info(f"[TTS Config] KOKORO_URL={KOKORO_URL}, PIPER_URL={PIPER_URL}, TTS_MODEL={TTS_MODEL}")
 OLLAMA_THINK = os.getenv("OLLAMA_THINK", "false").lower() == "true"
 TIMEZONE_ID = os.getenv("TIMEZONE", "America/Los_Angeles")
 TIMEZONE_DISPLAY = os.getenv("TIMEZONE_DISPLAY", "Pacific Time")
@@ -405,7 +405,6 @@ async def entrypoint(ctx: agents.JobContext) -> None:
     # This ensures /setup/status is available before users connect
 
     # Debug: log TTS config in subprocess
-    print(f"[JOB] TTS Config: KOKORO_URL={KOKORO_URL}, TTS_MODEL={TTS_MODEL}")
     logger.info(f"[JOB] TTS Config: KOKORO_URL={KOKORO_URL}, TTS_MODEL={TTS_MODEL}")
 
     logger.debug(f"Joining room: {ctx.room.name}")
