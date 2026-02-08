@@ -47,6 +47,9 @@ case "$OS" in
             echo "Installing certificate (RHEL/Fedora)..."
             sudo cp "$CERT" /etc/pki/ca-trust/source/anchors/caal.pem
             sudo update-ca-trust
+        elif command -v trust >/dev/null 2>&1; then
+            echo "Installing certificate (Arch/p11-kit)..."
+            sudo trust anchor --store "$CERT"
         else
             echo "Warning: could not detect CA trust directory. Skipping system trust."
         fi
