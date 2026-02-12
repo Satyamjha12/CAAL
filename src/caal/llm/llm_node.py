@@ -28,6 +28,7 @@ from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
 from ..integrations.n8n import execute_n8n_workflow
+from ..memory import ShortTermMemory
 from ..utils.formatting import strip_markdown_for_tts
 from .providers import LLMProvider
 
@@ -78,6 +79,7 @@ async def llm_node(
     chat_ctx,
     provider: LLMProvider,
     tool_data_cache: ToolDataCache | None = None,
+    short_term_memory: ShortTermMemory | None = None,
     max_turns: int = 20,
 ) -> AsyncIterable[str]:
     """Provider-agnostic LLM node with tool calling support.
@@ -89,6 +91,7 @@ async def llm_node(
         chat_ctx: Chat context from LiveKit
         provider: LLMProvider instance (OllamaProvider, GroqProvider, etc.)
         tool_data_cache: Cache for structured tool response data
+        short_term_memory: Short-term memory for context persistence
         max_turns: Max conversation turns to keep in sliding window
 
     Yields:
@@ -107,6 +110,7 @@ async def llm_node(
         messages = _build_messages_from_context(
             chat_ctx,
             tool_data_cache=tool_data_cache,
+            short_term_memory=short_term_memory,
             max_turns=max_turns,
         )
 
@@ -174,6 +178,7 @@ async def llm_node(
                         return
                     break  # No content either, fall through to streaming
 
+
                 # Execute tool calls
                 tool_round += 1
                 logger.info(
@@ -199,6 +204,7 @@ async def llm_node(
                     response.content,
                     provider=provider,
                     tool_data_cache=tool_data_cache,
+                    short_term_memory=short_term_memory,
                 )
                 # Loop back — model sees tool results and decides: chain or respond
 
@@ -279,18 +285,21 @@ def _strip_tool_messages(messages: list[dict]) -> list[dict]:
 def _build_messages_from_context(
     chat_ctx,
     tool_data_cache: ToolDataCache | None = None,
+    short_term_memory: ShortTermMemory | None = None,
     max_turns: int = 20,
 ) -> list[dict]:
-    """Build messages with sliding window and tool data context.
+    """Build messages with sliding window and context injection.
 
     Message order:
     1. System prompt (always first, never trimmed)
     2. Tool data context (injected from cache)
-    3. Chat history (sliding window applied)
+    3. Short-term memory context (awareness hint for tool chaining)
+    4. Chat history (sliding window applied)
 
     Args:
         chat_ctx: LiveKit chat context
         tool_data_cache: Cache of recent tool response data
+        short_term_memory: Short-term memory for context awareness
         max_turns: Max conversation turns to keep (1 turn = user + assistant)
     """
     system_prompt = None
@@ -353,7 +362,14 @@ def _build_messages_from_context(
         if context:
             messages.append({"role": "system", "content": context})
 
-    # 3. Apply sliding window to chat history
+    # 3. Inject short-term memory context (only after user has spoken)
+    has_user_message = any(m["role"] == "user" for m in chat_messages)
+    if short_term_memory and has_user_message:
+        memory_context = short_term_memory.get_context_message()
+        if memory_context:
+            messages.append({"role": "system", "content": memory_context})
+
+    # 4. Apply sliding window to chat history
     # max_turns * 2 accounts for user + assistant pairs
     max_messages = max_turns * 2
     if len(chat_messages) > max_messages:
@@ -500,6 +516,7 @@ async def _execute_tool_calls(
     response_content: str | None,
     provider: LLMProvider,
     tool_data_cache: ToolDataCache | None = None,
+    short_term_memory: ShortTermMemory | None = None,
 ) -> list[dict]:
     """Execute tool calls and append results to messages.
 
@@ -510,6 +527,7 @@ async def _execute_tool_calls(
         response_content: Original LLM response content (if any)
         provider: LLM provider (for formatting tool results)
         tool_data_cache: Optional cache to store structured tool response data
+        short_term_memory: Optional memory to store memory_hint from tool responses
     """
     # Add assistant message with tool calls
     tool_call_message = provider.format_tool_call_message(
@@ -538,6 +556,36 @@ async def _execute_tool_calls(
 
         try:
             tool_result = await _execute_single_tool(agent, tool_name, arguments)
+
+            # Extract and store memory_hint from tool response (deterministic)
+            # Supports two formats:
+            #   {"memory_hint": {"key": "simple_value"}}  → 7d default TTL
+            #   {"memory_hint": {"key": {"value": "...", "ttl": 3600}}}  → custom TTL
+            #   {"memory_hint": {"key": {"value": "...", "ttl": null}}}  → no expiry
+            if short_term_memory and isinstance(tool_result, dict):
+                memory_hint = tool_result.get("memory_hint")
+                if memory_hint and isinstance(memory_hint, dict):
+                    from caal.memory.base import DEFAULT_TTL_SECONDS
+
+                    for key, hint_value in memory_hint.items():
+                        # Check if hint_value is extended format with ttl
+                        if isinstance(hint_value, dict) and "value" in hint_value:
+                            actual_value = hint_value["value"]
+                            # "ttl" in dict distinguishes missing (use default) vs null (no expiry)
+                            if "ttl" in hint_value:
+                                ttl = hint_value["ttl"]  # Could be int or None
+                            else:
+                                ttl = DEFAULT_TTL_SECONDS
+                        else:
+                            actual_value = hint_value
+                            ttl = DEFAULT_TTL_SECONDS
+                        short_term_memory.store(
+                            key=key,
+                            value=actual_value,
+                            ttl_seconds=ttl,
+                            source="tool_hint",
+                        )
+                        logger.info(f"Stored memory hint from {tool_name}: {key}")
 
             # Cache structured data if present
             if tool_data_cache and isinstance(tool_result, dict):
